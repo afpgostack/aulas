@@ -58,3 +58,36 @@ app.listen(3333, () => {
 - Executado a aplicação utilizando o comando yarn dev
 - Alterado a mensagem json
 - Adicionado mensagem no console log ao iniciar a aplicação
+
+### Médodos HTTP
+
+```js
+app.get('/projects', (request, response) => {
+    return response.json([
+        'Projeto 1',
+        'Projeto 2',
+    ]);
+});
+app.post('/projects', (request, response) => {
+    return response.json([
+        'Projeto 1',
+        'Projeto 2',
+        'Projeto 3',
+    ]);
+});
+app.put('/projects/:id', (request, response) => {
+    return response.json([
+        'Projeto 4',
+        'Projeto 2',
+        'Projeto 3',
+    ]);
+});
+app.delete('/projects/:id', (request, response) => {
+    return response.json([
+        'Projeto 2',
+        'Projeto 3',
+    ]);
+});
+```
+
+- Adicionado no index.js os métodos HTTP: GET, POST, PUT e DELETE
