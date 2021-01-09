@@ -1,6 +1,6 @@
 # Jornada GoStack Rocketseat
 
-## Aulas nivel01
+## Aulas nivel01 - Backend
 
 ### Criando projeto Node
 
@@ -28,3 +28,33 @@ app.listen(3333);
 - Código javascript no arquivo index.js
 - Executado a aplicação com o node
 - Criado os arquivos README.md e .gitignore
+
+### Configurando Nodemon
+
+```shell
+yarn add nodemon -D
+yarn dev
+```
+
+```scripts
+"main": "src/index.js",
+"scripts": {
+    "dev": "nodemon"
+},
+```
+
+```js
+app.get('/', (request, response) => {
+    return response.json({ message: 'Hello GoStack!' });
+});
+app.listen(3333, () => {
+    console.log('Back-end started!');
+});
+```
+
+- Adicionado a dependencia de desenvolvimento nodemon
+- Alterado a linha main do arquivo package.json
+- Criado o script dev no arquivo package.json
+- Executado a aplicação utilizando o comando yarn dev
+- Alterado a mensagem json
+- Adicionado mensagem no console log ao iniciar a aplicação
