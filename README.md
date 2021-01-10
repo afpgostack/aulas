@@ -91,3 +91,32 @@ app.delete('/projects/:id', (request, response) => {
 ```
 
 - Adicionado no index.js os métodos HTTP: GET, POST, PUT e DELETE
+
+### Tipos de parâmetros
+
+```js
+app.use(express.json());
+app.get('/projects', (request, response) => {
+    const { tittle, owner } = request.query;
+    console.log(tittle);
+    console.log(owner);
+});
+app.post('/projects', (request, response) => {
+    const { tittle, owner } = request.body;
+    console.log(tittle);
+    console.log(owner);
+});
+app.put('/projects/:id', (request, response) => {
+    const { id } = request.params;
+    console.log(id);
+});
+app.delete('/projects/:id', (request, response) => {
+    const { id } = request.params;
+    console.log(id);
+});
+```
+
+- Adicionado a função para o express interpretar JSON
+- Query Params: Filtros e paginação (Utilizado no método GET)
+- Route Params: Identificar recursos (Utilizado nos métodos PUT e DELETE)
+- Request Body: Conteúdo ao criar ou editar um recurso (Utilizado no método POST)
