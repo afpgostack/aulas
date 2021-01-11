@@ -194,3 +194,38 @@ app.delete('/projects/:id', (request, response) => {
     - Criado a variável para receber o title do body
     - Criado a variável results que recebe o title caso ele esteja incluído no array projects e retorna os objetos do array cujo title filtrado
     - Retornado a variável results
+
+### Middlewares
+
+```js
+const { uuid, isUuid } = require('uuidv4');
+function logRequests(request, response, next) {
+    const { method, url } = request;
+    const logLabel = `[${method.toUpperCase()}] ${url}`;
+    console.time(logLabel);
+    next();
+    console.timeEnd(logLabel);
+}
+function validateProjectId(request, response, next) {
+    const { id } = request.params;
+    if(!isUuid(id)) {
+        return response.status(400).json({ error: 'Invalid project ID' });
+    }
+    return next();
+}
+app.use(logRequests);
+app.use('/projects/:id', validateProjectId);
+```
+- Criado a função logRequests com:
+    - Criado a desistruturação para receber o método e a url
+    - Criado a variável logLabel pegando o método em caixa alta e a url
+    - Iniciado a contagem de tempo ao chamar a variável logLabel
+    - Utilizado o next para seguir com as próximas execuções
+    - Finalizado a contagem de tempo de execução exibindo no console a variável logLabel e o tempo de execução
+- Chamado a função logRequests
+- Importado a função isUuid da biblioteca uuidv4
+- Criado a função validateProjectId com:
+    - Criado a desistruturação para receber o uuid da url
+    - Verificado se o uuid recebido é válido, se não for, retorna uma mensagem de erro
+    - Chamado o next para ir à proxima execução
+- Chamado a função validateProjectId para ser executada apenas nos métodos que possuem /projects/:id
