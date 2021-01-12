@@ -214,3 +214,49 @@ export default function Header({ title, children }) {
 - Acessado a propriedade title no arquivo Header.js
 - Adicionado uma lista como conteúdo de componente no arquivo App.js
 - Acessado o conteúdo do componente no arquivo Header.js
+
+### Estado e Imutabilidade
+
+```js
+function App() {
+    const [projects, setProjects] = useState(['Desenvolvimento de app', 'Front-end web']);
+    function handleAddProject() {
+        setProjects([...projects, `Novo projeto ${Date.now()}`]);
+    }
+    return (
+        <>
+            <Header title="Projects" />
+            <ul>
+                {projects.map(project => <li key={project}>{project}</li>)}
+            </ul>
+            <button type="button" onClick={handleAddProject}>Adicionar projeto</button>
+        </>
+    );
+}
+```
+
+```js
+export default function Header({ title }) {
+    return (
+        <header>
+            <h1>{title}</h1>
+        </header>
+    );
+}
+```
+
+- Criado a variável projects no arquivo App.js como um array
+- Retirado o conteúdo de componente no arquivo App.js e deixado apenas um componente Header
+- Retirado o acesso ao conteúdo do componente no arquivo Header.js
+- Adicionado a função map no App.js para exibir os objetos da variável projects em lista
+- Criado um botão para adicionar um novo objeto no array projects através da função handleAppProject
+- Criado a função handleAppProject para adicinar um novo objeto no array projects exibindo no console o array
+- Importado a função useState no arquivo App.js
+- Transformado a variável projects em um array de estado (Estado)
+- Desestruturado a variável projects para receber os valores e a função
+- Criado a função setProjects dentro da função handleAddProject (Imutabilidade)
+- Retirado o console.log da função handleAddProject
+
+> - useState retorna um array com 2 posições:
+>   - 1ª: Variável com o seu valor inicial
+>   - 2ª: Função para atualizarmos o valor
