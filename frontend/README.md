@@ -47,7 +47,7 @@ console.log(soma(1, 3));
 - Iniciado o projeto com o yarn
 - Criado os diretórios: ./src e ./public
 - Adicionado as dependêcias react e react-dom
-- Criado os arquivos: public/index.html e public/script.js
+- Criado o arquivo: public/index.html
 - Código html no arquivo index.html
 - Adicionado as dependências do babel e webpack
 - Criado o arquivo: ./babel.config.js
@@ -58,6 +58,63 @@ console.log(soma(1, 3));
 - Adicionado o caminho do bundle.js para ser executado no index.html
 - Aberto o arquivo index.html no navegador e inspecionado a página com o resultado da soma
 
-* Babel: Converter (transpilar) código do React para um código que o browser interprete
-* Webpack: Converter o código de cada tipo de arquivo (.js, .css, .png, ...) de uma maneira diferente
-* Loaders: babel-loader, css-loader, image-loader, file-loader, ...
+> Babel: Converter (transpilar) código do React para um código que o browser interprete
+> Webpack: Converter o código de cada tipo de arquivo (.js, .css, .png, ...) de uma maneira diferente
+> Loaders: babel-loader, css-loader, image-loader, file-loader, ...
+
+### Configurando Webpack
+
+```shell
+yarn add babel-loader
+yarn webpack --mode development
+yarn add webpack-dev-server -D
+yarn webpack serve --mode development
+```
+
+```js
+const path = require('path');
+module.exports = {
+    entry: path.resolve(__dirname, 'src', 'index.js'),
+    output: {
+        path: path.resolve(__dirname, 'public'),
+        filename: 'bundle.js'
+    },
+    devServer: {
+        contentBase: path.resolve(__dirname, 'public'),
+    },
+    module: {
+        rules: [
+            {
+                test: /\.js$/,
+                exclude: /node_modules/,
+                use: {
+                    loader: 'babel-loader',
+                }
+            }
+        ]
+    },
+};
+```
+
+```js
+export const soma = (a, b) => {
+    return a + b;
+}
+```
+
+```js
+import { soma } from './soma';
+console.log(soma(5, 3));
+```
+
+- Criado o arquivo: ./webpack.config.js
+- Adicionado a dependências babel-loader
+- Exportado os caminhos, arquivos e módulos para transpilação no arquivo webpack.config.js
+- Executado yarn webpack em modo desenvolvimento para transpilar o código no arquivo bundle.js
+- Criado o arquivo: src/soma.js
+- Retirado a função soma do arquivo index.js e adicionado ao arquivo soma.js
+- Importado a função soma no arquivo index.js de soma.js
+- Executado novamente o yarn webpack em modo desenvolvimento
+- Adicionado a dependência webpack-dev-server como desenvolvimento
+- Adicionado o caminho do conteúdo de base no arquivo webpack.config.js
+- Executado yarn webpack serve em modo desenvolvimento para disponibilizar a aplicação em localhost:8080 com live reloading das alterações no código
