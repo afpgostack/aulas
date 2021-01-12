@@ -118,3 +118,54 @@ console.log(soma(5, 3));
 - Adicionado a dependência webpack-dev-server como desenvolvimento
 - Adicionado o caminho do conteúdo de base no arquivo webpack.config.js
 - Executado yarn webpack serve em modo desenvolvimento para disponibilizar a aplicação em localhost:8080 com live reloading das alterações no código
+
+### Componentização
+
+```js
+import React from 'react';
+import { render } from 'react-dom';
+import App from './App';
+render(<App />, document.getElementById('app'));
+```
+
+```js
+import React from 'react';
+import Header from './components/Header';
+function App() {
+    return (
+        <>
+            <Header />;
+            <Header />;
+        </>
+    );
+}
+export default App;
+```
+
+```js
+import React from 'react';
+export default function Header() {
+    return (
+        <header>
+            <h1>ReactJS</h1>
+        </header>
+    );
+}
+```
+
+```json
+"emmet.syntaxProfiles": { "javascript": "jsx" },
+"emmet.includeLanguages": { "javascript": "javascriptreact" },
+```
+
+- Removido o arquivo: src/soma.js
+- Renderizado os componentes do index.html através do index.js
+- Criado o arquivo: src/App.js
+- Criado a função App no arquivo App.js que retorna um html
+- Criado o diretório: src/components/
+- Criado o arquivo: src/components/Header.js
+- Adicionado o plugin do emmet no arquivo de configuração do VSCode
+- Criado a função Header no arquivo Header.js que retorna um html
+- Importado o componente Header no arquivo App.js
+
+> - JSX: HTML dentro do JavaScript (Javascript XML)
