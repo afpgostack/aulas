@@ -337,6 +337,64 @@ export default App;
 - Importado o estilo do App.css no arquivo App.js
 - Criado os scripts dev e build no arquivo package.json
 - Executado yarn dev para iniciar a aplicação
-- Criado o diretório: src/assets
+- Criado o diretório: src/assets/
 - Feito o download de uma imagem do unsplash para o diretório assets com o nome de background.jpg
 - Importado a imagem background.jpg no arquivo App.js e exibida no JSX
+
+### Listando Projetos da API
+
+```shell
+yarn add axios
+```
+
+```js
+import axios from 'axios';
+const api = axios.create({
+    baseURL: 'http://localhost:3333'
+});
+export default api;
+```
+
+```js
+import React, { useEffect, useState } from 'react';
+import api from './services/api';
+import './App.css';
+import Header from './components/Header';
+function App() {
+    const [projects, setProjects] = useState([]);
+    useEffect(() => {
+        api.get('projects').then(response => {
+            setProjects(response.data);
+        });
+    }, []);
+    function handleAddProject() {
+        setProjects([...projects, `Novo projeto ${Date.now()}`]);
+    }
+    return (
+        <>
+            <Header title="Projects" />
+            <ul>
+                {projects.map(project => <li key={project.id}>{project.title}</li>)}
+            </ul>
+            <button type="button" onClick={handleAddProject}>Adicionar projeto</button>
+        </>
+    );
+}
+export default App;
+```
+
+- Iniciado o backend
+- Adicionado o pacote do axios ao frontend
+- Criado o diretório: src/services/
+- Criado o arquivo: src/services/api.js
+- Importado o axios no arquivo api.js e criado uma instância para se conectar ao backend
+- Importado no App.js o arquivo api.js
+- Removido a importação da imagem no arquivo App.js
+- Removido o diretório: /src/assets/
+- Adicionado a função useEffect no App.js para se conectar ao backend pela api retornando os dados
+- Iniciado o array projects com o estado vazio
+- Alterado a função map para exibir a lista com o títilo do projeto
+
+> - useEffect recebe dois parâmetros:
+>   - 1º: Qual função irá disparar
+>   - 2º: Quando disparar a função
