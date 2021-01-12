@@ -259,4 +259,84 @@ export default function Header({ title }) {
 
 > - useState retorna um array com 2 posições:
 >   - 1ª: Variável com o seu valor inicial
->   - 2ª: Função para atualizarmos o valor
+>   - 2ª: Função para atualizar o valor
+
+### Importando CSS e imagens
+
+```shell
+yarn add style-loader css-loader file-loader
+yarn dev
+```
+
+```js
+{
+    test: /\.css$/,
+    exclude: /node_modules/,
+    use: [
+        { loader: 'style-loader' },
+        { loader: 'css-loader' },
+    ]
+},
+{
+    test: /.*\.(gif|png|jpe?g)$/i,
+    use: {
+        loader: 'file-loader',
+    }
+}
+```
+
+```css
+* {
+    margin: 0;
+    padding: 0;
+    outline: 0;
+    box-sizing: border-box;
+}
+body {
+    background: #f5f5f5;
+    font: 14px sans-serif;
+    color: #333;
+}
+```
+
+```json
+"scripts": {
+  "dev": "webpack serve --mode development",
+  "build": "webpack --mode production"
+},
+```
+
+```js
+import React, { useState } from 'react';
+import './App.css';
+import backgroundImage from './assets/background.jpg';
+import Header from './components/Header';
+function App() {
+    const [projects, setProjects] = useState(['Desenvolvimento de app', 'Front-end web']);
+    function handleAddProject() {
+        setProjects([...projects, `Novo projeto ${Date.now()}`]);
+    }
+    return (
+        <>
+            <Header title="Projects" />
+            <img width={300} src={backgroundImage} />
+            <ul>
+                {projects.map(project => <li key={project}>{project}</li>)}
+            </ul>
+            <button type="button" onClick={handleAddProject}>Adicionar projeto</button>
+        </>
+    );
+}
+export default App;
+```
+
+- Adicionado os pacotes style-loader, css-loader e file-loader
+- Criado no arquivo webpack.config.js as regras para carregar os estilos css e arquivos
+- Criado o arquivo: src/App.css
+- Adicionado o estilo CSS no arquivo App.css
+- Importado o estilo do App.css no arquivo App.js
+- Criado os scripts dev e build no arquivo package.json
+- Executado yarn dev para iniciar a aplicação
+- Criado o diretório: src/assets
+- Feito o download de uma imagem do unsplash para o diretório assets com o nome de background.jpg
+- Importado a imagem background.jpg no arquivo App.js e exibida no JSX
