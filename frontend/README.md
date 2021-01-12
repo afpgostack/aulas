@@ -58,9 +58,9 @@ console.log(soma(1, 3));
 - Adicionado o caminho do bundle.js para ser executado no index.html
 - Aberto o arquivo index.html no navegador e inspecionado a página com o resultado da soma
 
-> Babel: Converter (transpilar) código do React para um código que o browser interprete
-> Webpack: Converter o código de cada tipo de arquivo (.js, .css, .png, ...) de uma maneira diferente
-> Loaders: babel-loader, css-loader, image-loader, file-loader, ...
+> - Babel: Converter (transpilar) código do React para um código que o browser interprete
+> - Webpack: Converter o código de cada tipo de arquivo (.js, .css, .png, ...) de uma maneira diferente
+> - Loaders: babel-loader, css-loader, image-loader, file-loader, ...
 
 ### Configurando Webpack
 
@@ -169,3 +169,48 @@ export default function Header() {
 - Importado o componente Header no arquivo App.js
 
 > - JSX: HTML dentro do JavaScript (Javascript XML)
+
+### Propriedades
+
+```js
+import React from 'react';
+import Header from './components/Header';
+function App() {
+    return (
+        <>
+            <Header title="Homepage">
+                <ul>
+                    <li>Homepage</li>
+                    <li>Projects</li>
+                </ul>
+            </Header>
+            <Header title="Projects">
+                <ul>
+                    <li>Homepage</li>
+                    <li>Projects</li>
+                    <li>Login</li>
+                </ul>
+            </Header>
+        </>
+    );
+}
+export default App;
+```
+
+```js
+import React from 'react';
+export default function Header({ title, children }) {
+    return (
+        <header>
+            <h1>{title}</h1>
+
+            {children}
+        </header>
+    );
+}
+```
+
+- Adicionado a propriedade title no arquivo App.js
+- Acessado a propriedade title no arquivo Header.js
+- Adicionado uma lista como conteúdo de componente no arquivo App.js
+- Acessado o conteúdo do componente no arquivo Header.js
