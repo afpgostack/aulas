@@ -398,3 +398,34 @@ export default App;
 > - useEffect recebe dois parâmetros:
 >   - 1º: Qual função irá disparar
 >   - 2º: Quando disparar a função
+
+### Cadastrando Projetos
+
+```shell
+yarn add @babel/plugin-transform-runtime -D
+```
+
+```js
+plugins: [
+    '@babel/plugin-transform-runtime'
+]
+```
+
+```js
+async function handleAddProject() {
+const response = await api.post('projects', {
+    title: `Novo projeto ${Date.now()}`,
+    owner: "Alisson Fernandes"
+});
+const project = response.data;
+setProjects([...projects, project]);
+}
+```
+
+- Enviado uma requisição do tipo POST pela api na função handleAddProject
+- Transformado a função handleAddProject em async
+- Criado a variável response para transformar a requisição POST pela api em await
+- Criado a variável project para criar o objeto com os dados da variável response
+- Utilizado a função setProjects para adicionar os dados da variável project no array projects para ser exibidos em tela ao adicionar um novo projeto, utilizando os mesmos dados do POST sem precisar de realizar uma nova requisição GET para exibir todos os projetos
+- Adicionado o plugin do babel transform runtime como dependência de desenvolvimento
+- Configurado no arquivo babel.config.js o plugin do babel transform runtime
