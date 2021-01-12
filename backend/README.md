@@ -92,6 +92,11 @@ app.delete('/projects/:id', (request, response) => {
 
 - Adicionado no index.js os métodos HTTP: GET, POST, PUT e DELETE
 
+> - GET: Buscar informações do back-end
+> - POST: Criar uma informção no back-end
+> - PUT/PATCH: Alterar uma informação no back-end
+> - DELETE: Deletar uma informação no back-end
+
 ### Tipos de parâmetros
 
 ```js
@@ -120,6 +125,10 @@ app.delete('/projects/:id', (request, response) => {
 - Query Params: Filtros e paginação (Utilizado no método GET)
 - Route Params: Identificar recursos (Utilizado nos métodos PUT e DELETE)
 - Request Body: Conteúdo ao criar ou editar um recurso (Utilizado no método POST)
+
+> - Query Params: Filtros e paginação
+> - Route Params: Identificar recursos (Atualizar/Deletar)
+> - Request Body: Conteúdo para criar ou editar um recurso (JSON)
 
 ### Aplicação Funcional
 
@@ -229,3 +238,20 @@ app.use('/projects/:id', validateProjectId);
     - Verificado se o uuid recebido é válido, se não for, retorna uma mensagem de erro
     - Chamado o next para ir à proxima execução
 - Chamado a função validateProjectId para ser executada apenas nos métodos que possuem /projects/:id
+
+> - Interpretador de requisições que interrompe totalmente a requisição ou altera dados da requisição
+
+## Aulas nivel01 - Frontend
+
+### Listando Projetos da API
+
+```shell
+yarn add cors
+```
+
+```js
+app.use(cors());
+```
+
+- Adicionado módulo cors
+- Importado no index.js o cors e o utilizado para permitir o acesso de quaisquer origens
