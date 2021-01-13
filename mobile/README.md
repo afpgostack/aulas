@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
 - Importado o axios no arquivo api.js e criado uma instância para se conectar ao backend
 - Importado no /src/index.js o arquivo api.js
 - Importado no /src/index.js o useState para armazenar os dados em lista e o useEffect para fazer a chamada à API
-- Criado as variáveis projects e setProjects para o array de estado
+- Criado a variável projects e a função setProjects para o array de estado
 - Utilizado a função useEffect com o método get na api para buscar os dados no backend
 - Importado os componentes SafeAreaView e FlatList e utilizados para exibir os dados em tela com os estilos
 
@@ -132,3 +132,77 @@ const styles = StyleSheet.create({
 > - Android com Android Studio: 10.0.2.2
 > - Android com Genymotion: 10.0.3.2
 > - Android com físico: IP da máquina
+
+### Criando novos projetos
+
+```js
+import React, { useEffect, useState } from 'react';
+import { SafeAreaView, FlatList, Text, StyleSheet, StatusBar, TouchableOpacity } from 'react-native';
+import api from './services/api';
+export default function App() {
+    const [projects, setProjects] = useState([]);
+    useEffect(() => {
+        api.get('projects').then(response => {
+            setProjects(response.data);
+        });
+    }, []);
+    async function handleAddProject() {
+        const response = await api.post('projects', {
+            title: `Novo projeto ${Date.now()}`,
+            owner: 'Alisson Fernandes'
+        });
+        const project = response.data;
+        setProjects([...projects, project]);
+    }
+    return (
+        <>
+            <StatusBar barStyle="light-content" backgroundColor="#7159c1" />
+            <SafeAreaView style={styles.container}>
+                <FlatList    
+                    data={projects}
+                    keyExtractor={project => project.id}
+                    renderItem={({ item: project }) => (
+                        <Text style={styles.project}>{project.title}</Text>
+                    )}
+                />
+            </SafeAreaView>
+            <TouchableOpacity
+                activeOpacity={0.6}
+                style={styles.button}
+                onPress={handleAddProject}
+            >
+                <Text style={styles.buttonText}>Adicionar projeto</Text>
+            </TouchableOpacity>
+        </>
+    );
+}
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: '#7159c1',
+    },
+    project: {
+        color: '#FFF',
+        fontSize: 32,
+    },
+    button: {
+        backgroundColor: '#FFF',
+        margin: 20,
+        height: 50,
+        borderRadius: 4,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    buttonText: {
+        fontWeight: 'bold',
+        fontSize: 16,
+    },
+});
+```
+
+- Criado no arquivo /src/index.js o botão adicionar na aplicação, importando o componente TouchableOpacity
+- Adicionado a estilização do botão
+- Criado a função async handleAddProject
+- Criado a variável response que recebe os dados do método post utilizando a api em await, para inserir os dados de um novo projeto
+- Criado a variável project que recebe os dados da variável responde
+- Executado a função setProjects com os dados já existente no array projects e adicionando os dados da variável project, para que os dados sejam adicionados em tela sem executar novamente o método get, fazendo o uso dos dados do método post
