@@ -212,3 +212,49 @@ export default appointmentsRouter;
 - Criado no arquivo appointments.routes.ts a variável findAppointmentInSameDate para percorrer o array appointments e encontrar uma data e horário já existente
 - Criado no arquivo appointments.routes.ts uma verificação se caso encontre uma data e horário já existente no array, retorna uma mensagem
 - Criado no arquivo appointments.routes.ts a interface Appointments para definir o tipo de cada variável do objeto que será armazenado no array
+
+### Model de Agendamento
+
+```js
+import { uuid } from 'uuidv4';
+class Appointment { 
+    id: string;
+    provider: string;
+    date: Date;
+    constructor(provider: string, date: Date) {
+        this.id = uuid();
+        this.provider = provider;
+        this.date = date;
+    }
+}
+export default Appointment;
+```
+
+```js
+import { Router } from 'express';
+import { startOfHour, parseISO, isEqual } from 'date-fns';
+import Appointment from '../models/Appointment';
+const appointmentsRouter = Router();
+const appointments: Appointment[] = [];
+appointmentsRouter.post('/', (request, response) => {
+    const { provider, date } = request.body;
+    const parsedDate = startOfHour(parseISO(date));
+    const findAppointmentInSameDate = appointments.find(appointment =>
+        isEqual(parsedDate, appointment.date),
+    );
+    if (findAppointmentInSameDate) {
+        return response
+            .status(400)
+            .json({ message: 'This appointment is alredy booked.' });
+    }
+    const appointment = new Appointment(provider, parsedDate);
+    appointments.push(appointment);
+    return response.json(appointment);
+});
+export default appointmentsRouter;
+```
+
+- Criado diretório: ./src/models/
+- Criado arquivo: /src/models/Appointment.ts
+- Criado no arquivo Appointment.ts a classe Appointment definindo o tipo das variáveis e o constructor o objeto
+- Removido do arquivo appointments.routes.ts a interface Appointment, importado a classe Appointment do arquivo Appointment.ts, usando o constructor como objeto da variável appointment para ser inserido no array appointments e removido a importação do uuid
