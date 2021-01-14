@@ -126,3 +126,43 @@ app.listen(3333, () => {
 - Criado as expressões request.body e request.query na sessão de debug do VSCode
 - Adicionado no arquivo index.ts, o breakpoint na linha request.body
 - Enviado o método post pelo insomnia
+
+### Cadastro de Agendamentos
+
+```shell
+yarn add uuidv4
+```
+
+```js
+import { Router } from 'express';
+import { uuid } from 'uuidv4';
+const appointmentsRouter = Router();
+const appointments = [];
+appointmentsRouter.post('/', (request, response) => {
+    const { provider, date } = request.body;
+    const appointment = {
+        id: uuid(),
+        provider,
+        date,
+    }
+    appointments.push(appointment);
+    return response.json(appointment);
+});
+export default appointmentsRouter;
+```
+
+```js
+import { Router } from 'express';
+import appointmentsRouter from './appointments.routes';
+const routes = Router();
+routes.use('/appointments', appointmentsRouter);
+export default routes;
+```
+
+- Criado arquivo: /src/routes/appointments.routes.ts
+- Criado no arquivo appointments.routes.ts a variável appointmentsRouter com a função Router, criando a rota raiz com o método post retornando uma mensagem em json
+- Importado no arquivo index.ts a rota appointmentsRouter, criando a rota /appointments
+- Criado no arquivo appointments.routes.ts o array apointments
+- Adicionado a lib uuidv4
+- Importado no arquivo appointments.routes.ts a função uuidv4
+- Criado no arquivo appointments.routes.ts a desistruturação das variáveis para receber os dados do body e a variável appointment para criar o objeto com os dados informados no insomnia
