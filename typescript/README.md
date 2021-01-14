@@ -56,10 +56,58 @@ app.get('/', helloWorld)
 app.listen(3333);
 ```
 
-- Criado o arquivo: /src/routes.ts
+- Criado arquivo: /src/routes.ts
 - Criado e exportado a função helloWorld no arquivo routes.ts com a mensagem
 - Importado no index.ts a função helloWorld do routes.ts e utilizado a função helloWorld no lugar da mensagem
 - Importado no routes.ts os tipos Request e Response do pacote express
 - Adicionado na função helloWorld do arquito routes.ts, os tipos Request e Response
 
 > - No typescript sempre que for necessário adicionar tipo, o VSCode irá avisar passando o mouse em cima do parâmetro
+
+### Tipando objetos e vetores
+
+```ts
+interface TechObject {
+    title: string;
+    experience: number;
+}
+interface CreateUserData {
+    name?: string;
+    email: string;
+    password: string;
+    techs: Array<string | TechObject>;
+}
+export default function createUser({ name, email, password }: CreateUserData) {
+    const user = {
+        name,
+        email,
+        password,
+    }
+    return user;
+}
+```
+
+```ts
+import { Request, Response } from 'express';
+import createUser from './services/CreateUser';
+export function helloWorld(request: Request, response: Response) {
+    const user = createUser({
+        email: 'email@dominio.com',
+        password: '123abc',
+        techs: [
+            'Node.js',
+            'ReactJS',
+            'React Native',
+        ],
+    });
+    return response.json({ message: 'Hello World' });
+}
+```
+
+- Criado diretório: ./src/services
+- Criado arquivo: /src/services/CreateUser.ts
+- Criado a função createUser no arquivo CreateUser.ts
+- Criado no arquivo CreateUser.ts a interface CreateUserData para definir os tipos de dados das variáveis da função createUser
+- Criado no arquivo CreateUser.ts a interface TechObject para definir os tipos de dados do array techs
+- Importado no arquivo routes.ts a função createUser
+- Criado no arquivo routes.ts a variável user chamando a função createUser, passando os dados das variáveis da função
