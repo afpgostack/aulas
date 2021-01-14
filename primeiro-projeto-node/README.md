@@ -53,3 +53,76 @@ app.listen(3333, () => {
 - Adicionado o pacote ts-node-dev como dependência de desenvolvimento
 - Criado no arquivo package.json os scripts build e dev:server
 - Executado yarn dev:server para iniciar a aplicação
+
+### Debugando NodeJS
+
+```shell
+yarn dev:server
+```
+
+```json
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "attach",
+            "protocol": "inspector",
+            "restart": true,
+            "name": "Debug",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "outFiles": [
+                "${workspaceFolder}/**/*.js"
+            ]
+        }
+    ]
+}
+```
+
+```json
+"dev:server": "ts-node-dev --inspect --transpile-only --ignore-watch node_modules src/server.ts"
+```
+
+```js
+import { Router } from 'express';
+const routes = Router();
+routes.get('/', (request, response) => {
+    return response.json({ message: 'Hello GoStack' });
+});
+routes.post('/users', (request, response) => {
+    const { name, email } = request.body;
+    const user = {
+        name,
+        email,
+    };
+    return response.json(user);
+});
+export default routes;
+```
+
+```js
+import express from 'express';
+import routes from './routes';
+const app = express();
+app.use(express.json());
+app.use(routes);
+app.listen(3333, () => {
+    console.log('Server started on port 3333!');
+});
+```
+
+- Aberto a sessão de debug do VSCode
+- Criado um novo arquivo json
+- Adicionado a flag --inspect no script dev:server do arquivo package.json
+- Iniciado a aplicação com yarn dev:server
+- Clicado no play do debug
+- Criado diretório: ./src/routes
+- Criado arquivo: /src/routes/index.ts
+- Removido a rota raíz do arquivo server.ts, deixando a criação do app em express
+- Adicionado a rota raíz no arquivo index.ts
+- Criado no arquivo server.ts a rota /users com o método post para debugar a requisição vinda do body do insomnia
+- Criado as expressões request.body e request.query na sessão de debug do VSCode
+- Adicionado no arquivo index.ts, o breakpoint na linha request.body
+- Enviado o método post pelo insomnia
