@@ -38,3 +38,28 @@ app.listen(3333);
 - Executado o comando node para iniciar a aplicação
 
 > - No diretório ./dist é onde ficarão os arquivos .js após a compilação do typescript
+
+### Quando adicionar tipos
+
+```ts
+import { Request, Response } from 'express';
+export function helloWorld(request: Request, response: Response) {
+    return response.json({ message: 'Hello World' });
+}
+```
+
+```ts
+import express from 'express';
+import { helloWorld } from './routes'
+const app = express();
+app.get('/', helloWorld)
+app.listen(3333);
+```
+
+- Criado o arquivo: /src/routes.ts
+- Criado e exportado a função helloWorld no arquivo routes.ts com a mensagem
+- Importado no index.ts a função helloWorld do routes.ts e utilizado a função helloWorld no lugar da mensagem
+- Importado no routes.ts os tipos Request e Response do pacote express
+- Adicionado na função helloWorld do arquito routes.ts, os tipos Request e Response
+
+> - No typescript sempre que for necessário adicionar tipo, o VSCode irá avisar passando o mouse em cima do parâmetro
