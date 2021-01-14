@@ -166,3 +166,49 @@ export default routes;
 - Adicionado a lib uuidv4
 - Importado no arquivo appointments.routes.ts a função uuidv4
 - Criado no arquivo appointments.routes.ts a desistruturação das variáveis para receber os dados do body e a variável appointment para criar o objeto com os dados informados no insomnia
+
+### Validando a data
+
+```shell
+yarn add date-fns
+```
+
+```js
+import { Router } from 'express';
+import { uuid } from 'uuidv4';
+import { startOfHour, parseISO, isEqual } from 'date-fns';
+const appointmentsRouter = Router();
+interface Appointment {
+    id: string;
+    provider: string;
+    date: Date;
+}
+const appointments: Appointment[] = [];
+appointmentsRouter.post('/', (request, response) => {
+    const { provider, date } = request.body;
+    const parsedDate = startOfHour(parseISO(date));
+    const findAppointmentInSameDate = appointments.find(appointment =>
+        isEqual(parsedDate, appointment.date),
+    );
+    if (findAppointmentInSameDate) {
+        return response
+            .status(400)
+            .json({ message: 'This appointment is alredy booked.' });
+    }
+    const appointment = {
+        id: uuid(),
+        provider,
+        date: parsedDate,
+    };
+    appointments.push(appointment);
+    return response.json(appointment);
+});
+export default appointmentsRouter;
+```
+
+- Adicionado a biblioteca date-fns
+- Importado no arquivo appointments.routes.ts as funções startOfHour, parseISO e isEqual da biblioteca date-fns
+- Criado no arquivo appointments.routes.ts a variável parsedDate para executar a função startOfHour
+- Criado no arquivo appointments.routes.ts a variável findAppointmentInSameDate para percorrer o array appointments e encontrar uma data e horário já existente
+- Criado no arquivo appointments.routes.ts uma verificação se caso encontre uma data e horário já existente no array, retorna uma mensagem
+- Criado no arquivo appointments.routes.ts a interface Appointments para definir o tipo de cada variável do objeto que será armazenado no array
