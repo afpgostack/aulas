@@ -392,3 +392,91 @@ constructor({ provider, date }: Omit<Appointment, 'id'>) {
 
 > - DTO: Data Transfer Object
 >   - Transmitir dados de um arquivo para outro
+
+### Services e SOLID
+
+```js
+import { startOfHour } from 'date-fns';
+import Appointment from '../models/Appointment';
+import AppointmentsRepository from '../repositories/AppointmentsRepository';
+interface Request {
+    provider: string;
+    date: Date;
+}
+class CreateAppointmentService {
+    private appointmentsRepository: AppointmentsRepository;
+    constructor(appointmentsRepository: AppointmentsRepository) {
+        this.appointmentsRepository = appointmentsRepository;
+    }
+    public execute({ provider, date }: Request): Appointment {
+        const appointmentDate = startOfHour(date);
+        const findAppointmentInSameDate = this.appointmentsRepository.findByDate(appointmentDate);
+        if (findAppointmentInSameDate) {
+            throw Error('This appointment is alredy booked.');
+        }   
+        const appointment = this.appointmentsRepository.create({
+            provider,
+            date: appointmentDate,
+        });
+        return appointment;
+    }
+}
+export default CreateAppointmentService;
+```
+
+```js
+import { Router } from 'express';
+import { parseISO } from 'date-fns';
+import AppointmentsRepository from '../repositories/AppointmentsRepository';
+import CreateAppointmentService from '../services/CreateAppointmentService';
+const appointmentsRouter = Router();
+const appointmentsRepository = new AppointmentsRepository();
+appointmentsRouter.get('/', (request, response) => {
+    const appointments = appointmentsRepository.all();
+    return response.json(appointments);
+});
+appointmentsRouter.post('/', (request, response) => {
+    try {
+        const { provider, date } = request.body;
+        const parsedDate = parseISO(date);
+        const createAppointment = new CreateAppointmentService(appointmentsRepository);
+        const appointment = createAppointment.execute({ provider, date: parsedDate });
+        return response.json(appointment);
+    } catch (err) {
+        return response.status(400).json({ error: err.message });
+    }
+});
+export default appointmentsRouter;
+```
+
+- Criado diretório: ./src/services
+- Criado arquivo: /src/services/CreateAppointmentService.ts
+- Importado no arquivo CreateAppointmentService.ts o model Appointment
+- Criado no arquivo CreateAppointmentService.ts a classe CreateAppointmentService com o método execute do tipo Appointment
+- Movido do arquivo appointments.routes.ts a lógica que encontra a data dentro do array, faz a verificação de data existente e que chama o método create do repositório, para o arquivo CreateAppointmentService.ts
+- Criado no arquivo CreateAppointmentService.ts a interface Request para ser utilizado como tipo na desestruturação do método execute
+- Alterado no arquivo CreateAppointmentService.ts o retorno da mensagem de erro através do throw
+- Importado no arquivo CreateAppointmentService.ts o repositório AppointmentsRepository
+- Criado no arquivo CreateAppointmentService.ts a variável privada appointmentsRepository do tipo AppointmentsRepository
+- Criado no arquivo CreateAppointmentService.ts um constructor do tipo AppointmentsRepository
+- Importado no arquivo CreateAppointmentService.ts a função startOfHour da biblioteca date-fns
+- Importado no arquivo appointments.routes.ts o service CreateAppointmentService
+- Removido do arquivo appointmensts.routes.ts a importação da função startOfHour
+- Criado no arquivo appointmensts.routes.ts dentro do método post, a variável createAppointment construindo um novo objeto CreateAppointmentService passando como parâmetro o appointmentsRepository
+- Criado no arquivo appointmensts.routes.ts a variável appointment chamando o método execute do createAppointment passando os parâmetros provider e date
+- Adicionado no arquivo appointmensts.routes.ts dentro do método post, o try catch envolvendo todo o código, para retornar a mensagem de erro, caso ocorra
+
+> - models
+>   - Representação de como um dado é salvo dentro da aplicação, como é a composição desse dado.
+> - repositories
+>   - Manipulação do dado no seu armazenamento, responsável pelas operações de criar, listar, alterar, deletar, filtrar, procurar, ...
+> - routes
+>   - Responsável pelo request e response, ou seja, pelas requisições que são feitas à aplicação e as respostas à essas requisições. A rota recebe uma requisição, chama outro arquivo para tratar a requisição e devolve uma resposta. Também é responsável pela transformação dos dados de uma forma em outra.
+> - services
+>   - Possui as regras de negócio da aplicação. Cada serviço é responsável por apenas uma única e exclusiva funcionalidade. Cada arquivo de serviço vai possuir apenas um método. Os services não possuem acesso direto aos dados da requisição e aos dados da resposta.
+> - Dependency Inversion (SOLID)
+>   - Sempre quando há uma dependência externa, ao invés de instanciar a classe de repositório dentro do service, é criado um constructor para que possa receber a classe como parâmetro, para que independente da quantidade de services que forem criados, eles utilizem o mesmo repositório.
+> - DRY: Don't repeat Yourself (Não repita regra de negócio dentro da aplicação)
+> - SOLID aplicados
+>   - Single Responsability Principle
+>   - Dependency Invertion Principle
