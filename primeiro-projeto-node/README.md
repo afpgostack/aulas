@@ -332,3 +332,25 @@ export default appointmentsRouter;
 >   - read
 >   - delete
 >   - update...
+
+### Listando Agendamentos
+
+```js
+public all(): Appointment[] {
+    return this.appointments;
+}
+```
+
+```js
+appointmentsRouter.get('/', (request, response) => {
+    const appointments = appointmentsRepository.all();
+    return response.json(appointments);
+});
+```
+
+- Criado no arquivo AppointmentsRepository.ts a variável publica all retornando o array appointments
+- Criado no arquivo appointments.routes.ts a rota raíz com o método get, criando a variável appointments que recebe os dados do array appointmentsRepository, retornando a variável appointments
+
+> No arquivo de rota, aos poucos está sendo aplicado o SoC
+>   - SoC: Separation of Concerns (Separação de preocupações)
+> O objetivo é refaturar os códigos, fazendo a abstração para saber onde melhor se encaixam
