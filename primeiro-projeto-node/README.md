@@ -258,3 +258,77 @@ export default appointmentsRouter;
 - Criado arquivo: /src/models/Appointment.ts
 - Criado no arquivo Appointment.ts a classe Appointment definindo o tipo das variáveis e o constructor o objeto
 - Removido do arquivo appointments.routes.ts a interface Appointment, importado a classe Appointment do arquivo Appointment.ts, usando o constructor como objeto da variável appointment para ser inserido no array appointments e removido a importação do uuid
+
+### Criando repositórios
+
+```js
+import { isEqual } from 'date-fns';
+import Appointment from '../models/Appointment';
+class AppointmentsRepository {
+    private appointments: Appointment[];
+    constructor() {
+        this.appointments = [];
+    }
+    public findByDate(date: Date): Appointment | null {
+        const findAppointment = this.appointments.find(appointment =>
+            isEqual(date, appointment.date),
+        );
+        return findAppointment || null;
+    }
+    public create(provider: string, date: Date): Appointment {
+        const appointment = new Appointment(provider, date);
+        this.appointments.push(appointment);
+        return appointment;
+    }
+}
+export default AppointmentsRepository;
+```
+
+```js
+import { Router } from 'express';
+import { startOfHour, parseISO } from 'date-fns';
+import AppointmentsRepository from '../repositories/AppointmentsRepository';
+const appointmentsRouter = Router();
+const appointmentsRepository = new AppointmentsRepository();
+appointmentsRouter.post('/', (request, response) => {
+    const { provider, date } = request.body;
+    const parsedDate = startOfHour(parseISO(date));
+    const findAppointmentInSameDate = appointmentsRepository.findByDate(parsedDate);
+    if (findAppointmentInSameDate) {
+        return response
+            .status(400)
+            .json({ message: 'This appointment is alredy booked.' });
+    }
+    const appointment = appointmentsRepository.create(provider, parsedDate);
+    return response.json(appointment);
+});
+export default appointmentsRouter;
+```
+
+- Criado diretório: ./src/repositories/
+- Criado arquivo: /src/repositories/AppointmentsRepository.ts
+- Importado no arquivo AppointmentsRepository.ts o model Appointment
+- Criado a classe AppointmentsRepository
+- Criado a variável privada appointments dentro da classe AppointmentsRepository que utiliza o tipo do model Appointment em array
+- Criado o constructor dentro da classe AppointmentsRepository para inicializar o array como vazio
+- Criado a variável publica com o método create, que cria um novo objeto appointment do tipo Appoitment e realiza o push para o array com os dados do objeto appointment
+- Removido do arquivo appointments.routes.ts a variável appointment que cria um novo objeto do tipo Appointment
+- Removido do arquivo appointments.routes.ts o array appointments do tipo Appointment
+- Importado no arquivo appointments.routes.ts a classe AppointmentsRepository
+- Criado no arquivo appointments.routes.ts a variável appointmentsRepository instanciando a classe AppointmentsRepository
+- Removido do arquivo appointments.routes.ts o método push
+- Criado no arquivo appointments.routes.ts a variável appointment chamando o metodo create do appointmentsRepository
+- Criado no arquivo AppointmentsRepository.ts a variável publica findByDate com o tipo Appointment ou nulo
+- Movido a lógica da variável findAppointmentInSameDate do arquivo appointments.routes.ts para dentro do findByDate do arquivo AppointmentsRepository.ts
+- Importado no arquivo AppointmentsRepository.ts o método isEqual da biblioteca date-fns
+- Utilizado no arquivo appointments.routes.ts a variável findAppointmentInSameDate para chamar findByDate do arquivo AppointmentsRepository.ts
+- Removido do arquivo appointments.routes.ts as importações do model Appointment e o método isEqual da biblioteca date-fns
+
+> Persistência <--> Repositório <--> Rota
+> - Repositório (Responsável por fazer as operações no banco de dados)
+>   - find
+>   - create
+>   - list
+>   - read
+>   - delete
+>   - update...
