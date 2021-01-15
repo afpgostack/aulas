@@ -354,3 +354,41 @@ appointmentsRouter.get('/', (request, response) => {
 > No arquivo de rota, aos poucos está sendo aplicado o SoC
 >   - SoC: Separation of Concerns (Separação de preocupações)
 > O objetivo é refaturar os códigos, fazendo a abstração para saber onde melhor se encaixam
+
+### Trabalhando com dados
+
+```js
+interface CreateAppontimentDTO {
+    provider: string;
+    date: Date;
+}
+//...
+public create({ provider, date }: CreateAppontimentDTO): Appointment {
+    const appointment = new Appointment({ provider, date });
+    this.appointments.push(appointment);
+    return appointment;
+}
+```
+
+```js
+const appointment = appointmentsRepository.create({
+    provider,
+    date: parsedDate,
+});
+```
+
+```js
+constructor({ provider, date }: Omit<Appointment, 'id'>) {
+    this.id = uuid();
+    this.provider = provider;
+    this.date = date;
+}
+```
+
+- Criado no arquivo AppointmentsRepository.ts a interface CreateAppointmentDTO
+- Alterado no arquivo AppointmentsRepository.ts os parâmetros do método create com a tipagem do CreateAppointmentDTO
+- Alterado no arquivo appointments.routes.ts a chamada appointmentsRepository.create enviando os objetos ao invés de argumentos
+- Alterado no arquivo Appointments.ts o constructor desestruturando os argumentos como objetos
+
+> - DTO: Data Transfer Object
+>   - Transmitir dados de um arquivo para outro
