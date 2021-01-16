@@ -43,6 +43,7 @@ import './database';
 - Importado no arquivo ./server.ts o diretório ./database
 - Criado através do dbeaver o banco de dados gostack_gobarber
 - Selecionado o banco de dados gostack_gobarber, criado o usuário docker com a senha docker e dado as permissões de grant_all
+- Adicionado a extensão uuid-ossp ao banco de dados gostack_gobarber
 - Iniciado o app
 
 ### Criando tabela de agendamentos
@@ -79,6 +80,7 @@ export default class CreateAppointments1610757202516 implements MigrationInterfa
                         type: 'varchar',
                         isPrimary: true,
                         generationStrategy: 'uuid',
+                        default: 'uuid_generate_v4()',
                     },
                     {
                         name: 'provider',
@@ -138,3 +140,114 @@ export default Appointment;
 - Importado no arquivo /src/models/Appointment.ts o model Entity, Column e PrimaryGeneratedColumn do pacote typeorm
 - Removido do arquivo /src/models/Appointment.ts o constructor da classe Appointment e a importação do uuidv4
 - Adicionado no arquivo /src/models/Appointment.ts dentro da classe Appointment os métodos para registro dos dados na tabela
+
+### Repositório do TypeORM
+
+```shell
+yarn add reflect-metadata
+```
+
+```json
+"entities": [
+    "./src/models/*.ts"
+],
+```
+
+```ts
+import 'reflect-metadata';
+```
+
+```ts
+import { EntityRepository, Repository } from 'typeorm';
+import Appointment from '../models/Appointment';
+@EntityRepository(Appointment)
+class AppointmentsRepository extends Repository<Appointment> {
+    public async findByDate(date: Date): Promise<Appointment | null> {
+        const findAppointment = await this.findOne({
+            where: { date },
+        });
+        return findAppointment || null;
+    }
+}
+export default AppointmentsRepository;
+```
+
+```ts
+import { startOfHour } from 'date-fns';
+import { getCustomRepository } from 'typeorm';
+import Appointment from '../models/Appointment';
+import AppointmentsRepository from '../repositories/AppointmentsRepository';
+interface Request {
+    provider: string;
+    date: Date;
+}
+class CreateAppointmentService {
+    public async execute({ provider, date }: Request): Promise<Appointment> {
+        const appointmentsRepository = getCustomRepository(AppointmentsRepository);
+        const appointmentDate = startOfHour(date);
+        const findAppointmentInSameDate = await appointmentsRepository.findByDate(appointmentDate);
+        if (findAppointmentInSameDate) {
+            throw Error('This appointment is alredy booked.');
+        }   
+        const appointment = appointmentsRepository.create({
+            provider,
+            date: appointmentDate,
+        });
+        await appointmentsRepository.save(appointment);
+        return appointment;
+    }
+}
+export default CreateAppointmentService;
+```
+
+```ts
+import { Router } from 'express';
+import { getCustomRepository } from 'typeorm';
+import { parseISO } from 'date-fns';
+import AppointmentsRepository from '../repositories/AppointmentsRepository';
+import CreateAppointmentService from '../services/CreateAppointmentService';
+const appointmentsRouter = Router();
+appointmentsRouter.get('/', async (request, response) => {
+    const appointmentsRepository = getCustomRepository(AppointmentsRepository);
+    const appointments = await appointmentsRepository.find();
+    return response.json(appointments);
+});
+appointmentsRouter.post('/', async (request, response) => {
+    try {
+        const { provider, date } = request.body;
+        const parsedDate = parseISO(date);
+        const createAppointment = new CreateAppointmentService();
+        const appointment = await createAppointment.execute({ provider, date: parsedDate });
+        return response.json(appointment);
+    } catch (err) {
+        return response.status(400).json({ error: err.message });
+    }
+});
+export default appointmentsRouter;
+```
+
+- Importado no arquivo /src/server.ts o pacote reflect-metadata
+- Adicionado o pacote reflect-metadata
+- Adicionado no arquivo ormconfig.json o caminho das entidades apontando os arquivos .ts do diretório models
+- Removido do arquivo AppointmentsRepository.ts a interface, o array, o constructor, os métodos all e create
+- Importado no arquivo AppointmentsRepository.ts o EntityRepository e o Repository do pacote typeorm
+- Adicionado no arquivo AppointmentsRepository.ts o decorator EntityRepository passando o model Appointment
+- Alterado no arquivo AppointmentsRepository.ts a classe AppointmentsRepository como extends da classe Repository com o model Appointment como parâmetro
+- Alterado no arquivo AppointmentsRepository.ts a função findByDate transformando em função asincrona e retornando uma promise do tipo Appointment ou nulo
+- Alterado no arquivo AppointmentsRepository.ts dentro da função findByDate, a variável findAppointment utilizando em await o método findOne já existendo do pacote typeorm
+- Removido do arquivo AppointmentsRepository.ts a importação do pacote date-fns
+- Importado no arquivo CreateAppointmentService.ts a função getCustomRepository do pacote typeorm
+- Removido do arquivo CreateAppointmentService.ts de dentro da classe CreateAppointmentService, a variável privada appointmentsRepository e o constructor
+- Adicionado no arquivo CreateAppointmentService.ts dentro da classe CreateAppointmentService e do método execute, a variável appointmentsRepository chamando a função getCustomRepository passando como parâmetro a importação AppointmentsRepository
+- Removido do arquivo CreateAppointmentService.ts dentro da classe CreateAppointmentService e método execute, os this. pois não existe mais a variável privada
+- Alterado no arquivo CreateAppointmentService.ts dentro da classe CreateAppointmentService, a função findByDate como await
+- Adicionado no arquivo CreateAppointmentService.ts dentro da classe CreateAppointmentService e método execute, o await com o método save
+- Transformado no arquivo CreateAppointmentService.ts dentro da classe CreateAppointmentService, o método execute como asíncrono retornando uma promise do tipo Appointment
+- Removido do arquivo appointments.routes.ts a variável appointmentsRepository
+- Importado no arquivo appointments.routes.ts a função getCustomRepository do pacote typeorm
+- Transformado no arquivo appointments.routes.ts a rota get em asíncrona
+- Adicionado no arquivo appointments.routes.ts na rota get, a variável appointmentsRepository chamando a função getCustomRepository passando como parâmetro o AppointmentsRepository
+- Alterado no arquivo appointments.routes.ts na rota get, o método all por find como await
+- Retirado do arquivo appointments.routes.ts na rota post, o parâmetro appointmentsRepository do método CreateAppointmentService
+- Transformado no arquivo appointments.routes.ts a rota post em asíncrona
+- Adicionado no arquivo appointments.routes.ts na rota post, o await para o método execute
