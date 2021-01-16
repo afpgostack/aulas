@@ -9,7 +9,8 @@
   <a href="#model-e-migration-de-usuários">Model e migration de usuários</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
   <a href="#relacionamento-nos-models">Relacionamento nos models</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
   <a href="#criação-de-registros">Criação de registros</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
-  <a href="#criptografia-de-senha">Criptografia de senha</a>
+  <a href="#criptografia-de-senha">Criptografia de senha</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+  <a href="#validando-credenciais">Validando credenciais</a>
 </p>
 
 ### Configurando TypeORM
@@ -573,3 +574,90 @@ return response.json(userWithoutPassword);
 - Importado no arquivo CreateUserService.ts a função hash do pacote bcryptjs
     - Criado a variável hashedPassword utilizando a função hash para criptografar a senha
 - Criado no arquivo user.routes.ts a variável userWithoutPassword para que o retorno do response não exiba a senha criptografada
+
+### Validando credenciais
+
+```ts
+import { getRepository } from 'typeorm';
+import { compare } from 'bcryptjs';
+import User from '../models/User';
+interface Request {
+    email: string;
+    password: string;
+}
+interface Response {
+    user: User
+}
+class AuthenticateUserService {
+    public async execute({ email, password }: Request): Promise<Response> {
+        const usersRepository = getRepository(User);
+        const user = await usersRepository.findOne({ where: { email } });
+        if (!user) {
+            throw new Error('Incorrect email/password combination.');
+        }
+        const passwordMatched = await compare(password, user.password);
+        if (!passwordMatched) {
+            throw new Error('Incorrect email/password combination.');
+        }
+        return { user };
+    }
+}
+export default AuthenticateUserService;
+```
+
+```ts
+import { Router } from 'express';
+import AuthenticateUserService from '../services/AuthenticateUserService';
+const sessionsRouter = Router();
+sessionsRouter.post('/', async (request, response) => {
+    try {
+        const { email, password } = request.body;
+        const authenticateUser = new AuthenticateUserService();
+        const { user } = await authenticateUser.execute({
+            email,
+            password,
+        });
+        const userWithoutPassword = {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            created_at: user.created_at,
+            updated_at: user.updated_at,
+        };
+        return response.json(userWithoutPassword);
+    } catch (err) {
+        return response.status(400).json({ error: err.message });
+    }
+});
+export default sessionsRouter;
+```
+
+```ts
+//...
+import sessionsRouter from './sessions.routes';
+//...
+routes.use('/sessions', sessionsRouter);
+//...
+```
+
+- Criado arquivo: ./src/services/AuthenticateUserService.ts
+    - Importado a função getRepository do pacote typeorm, importado a função compare do pacote bcryptjs e importado o model User
+    - Criado a interface Request tipando as variáveis email e password e a interface Response tipando a variável user com o model User
+    - Criado a classe AuthenticateUserService com o método execute assíncrono
+        - Criado o método execute assíncrono com as variáveis email e password do tipo Request
+        - Criado a variável usersRepository para instanciar a função getRepository passando o model User
+        - Criado a variável user recebendo o função findOne como await para encontrar o dado da variável email no banco de dados
+        - Verificado se o dado da variável user não foi encontrado no banco de dados, retorna uma mensagem de erro
+        - Criado a variável passwordMatched recebendo a função compare como await passando a senha recebida do body e a senha armazenada no banco de dados
+        - Verificado se as senhas não forem as mesmas, retorna uma mensagem de erro
+        - Retornado a variável user
+- Criado arquivo: ./src/routes/sessions.routes.ts
+    - Importado a função Router do expres e a classe AuthenticateUserService
+    - Criado a rota raíz com o método post assíncrono
+        - Entre o try catch para receber as mensagens
+        - Criado as variáveis email e password desestruturadas para receber os dados do body
+        - Criado a variável authenticateUser para instanciar os métodos do serviço AuthenticateUserService
+        - Criado a variável user desestruturada que recebe o método execute como await do service AuthenticateUserService, passando as variáveis email e password
+        - Criado a variável userWithoutPassword para que o retorno do response não exiba a senha
+        - Retornado a variável userWithoutPassword
+- Criado no arquivo ./src/routes/index.ts a rota /sessions para o arquivo sessions.routes.ts
