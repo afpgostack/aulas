@@ -1,6 +1,13 @@
 # Jornada GoStack Rocketseat
 
 ## Aulas nivel02 - Iniciando back-end do app
+<p align="center">
+  <a href="#configurando-typeorm">Configurando TypeORM</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+  <a href="#criando-tabela-de-agendamentos">Criando tabela de agendamentos</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+  <a href="#criando-model-de-agendamentos">Criando model de agendamentos</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+  <a href="#repositório-do-typeorm">Repositório do TypeORM</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+  <a href="#model-e-migration-de-usuários">Model e migration de usuários</a>
+</p>
 
 ### Configurando TypeORM
 
@@ -251,3 +258,111 @@ export default appointmentsRouter;
 - Retirado do arquivo appointments.routes.ts na rota post, o parâmetro appointmentsRepository do método CreateAppointmentService
 - Transformado no arquivo appointments.routes.ts a rota post em asíncrona
 - Adicionado no arquivo appointments.routes.ts na rota post, o await para o método execute
+
+### Model e migration de usuários
+
+```shell
+yarn typeorm migration:create -n CreateUsers
+yarn typeorm migration:revert
+yarn typeorm migration:run
+```
+
+```ts
+import {MigrationInterface, QueryRunner, Table } from "typeorm";
+export default class CreateUsers1610798889353 implements MigrationInterface {
+    public async up(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.createTable(
+            new Table({
+                name: 'users',
+                columns: [
+                    {
+                        name: 'id',
+                        type: 'varchar',
+                        isPrimary: true,
+                        generationStrategy: 'uuid',
+                        default: 'uuid_generate_v4()',
+                    },
+                    {
+                        name: 'name',
+                        type: 'varchar',
+                    },
+                    {
+                        name: 'email',
+                        type: 'varchar',
+                        isUnique: true,
+                    },
+                    {
+                        name: 'password',
+                        type: 'varchar',
+                    },
+                    {
+                        name: 'created_at',
+                        type: 'timestamp',
+                        default: 'now()',
+                    },
+                    {
+                        name: 'updated_at',
+                        type: 'timestamp',
+                        default: 'now()',
+                    },
+                ],
+            }),
+        );
+    }
+    public async down(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.dropTable('users');
+    }
+}
+```
+
+```ts
+{
+    name: 'created_at',
+    type: 'timestamp',
+    default: 'now()',
+},
+{
+    name: 'updated_at',
+    type: 'timestamp',
+    default: 'now()',
+},
+```
+
+```ts
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+@Entity('users')
+class Users {
+    @PrimaryGeneratedColumn('uuid')
+    id: string;
+    @Column()
+    name: string;
+    @Column()
+    email: string;
+    @Column()
+    password: string;
+    @CreateDateColumn()
+    created_at: Date;
+    @UpdateDateColumn()
+    updated_at: Date;
+}
+export default Users;
+```
+
+```ts
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+//...
+@CreateDateColumn()
+created_at: Date;
+@UpdateDateColumn()
+updated_at: Date;
+//...
+```
+
+- Executado o comando yarn typeorm para criar no diretório migrations o arquivo de configuração para a criação da tabela users
+- Adicionado no arquivo $id-CreateUsers.ts do diretório migrations, as propriedades para a criação da tabela users
+- Adicionado no arquivo $id-CreateAppointments.ts do diretório migrations, as propriedades de created_at e updated_at da tabela appointments
+- Criado arquivo: /src/models/Users.ts
+- Adicionado no arquivo /src/models/Users.ts os decorators e a classe User para a criação da tabela users 
+- Adicionado no arquivo /src/models/Appointments.ts os decorators CreateDateColumn e UpdateDateColumn na classe Appointment para a tabela appointments
+- Executado o migration:revert para desfazer a tabela appointments
+- Executado o migration:run para criar no banco de dados a tabela users e appointments
