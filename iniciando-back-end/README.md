@@ -7,8 +7,9 @@
   <a href="#criando-model-de-agendamentos">Criando model de agendamentos</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
   <a href="#repositório-do-typeorm">Repositório do TypeORM</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
   <a href="#model-e-migration-de-usuários">Model e migration de usuários</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
-  <a href="#relationamento-nos-models">Relacionamento nos models</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
-  <a href="#criação-de-registror">Criação de registros</a>
+  <a href="#relacionamento-nos-models">Relacionamento nos models</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+  <a href="#criação-de-registros">Criação de registros</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+  <a href="#criptografia-de-senha">Criptografia de senha</a>
 </p>
 
 ### Configurando TypeORM
@@ -534,3 +535,41 @@ const appointment = appointmentsRepository.create({
 - Alterado no arquivo appointments.routes.ts a variável provider para provider_id
 - Alterado no arquivo CreateAppointmentService a variável provider para provider_id
 - Criado um usuário pelo insomnia, utilizado o id gerado para criar também um agendamento passando o id como provide_id
+
+### Criptografia de senha
+
+```shell
+yarn add bcryptjs
+yarn add -D @types/bcryptjs
+```
+
+```ts
+//...
+import { hash } from 'bcryptjs';
+//...
+const hashedPassword = await hash(password, 8);
+const user = usersRepository.create({
+    name,
+    email,
+    password: hashedPassword,
+});
+//...
+```
+
+```ts
+//...
+const userWithoutPassword = {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    created_at: user.created_at,
+    updated_at: user.updated_at,
+};
+return response.json(userWithoutPassword);
+//...
+```
+
+- Adicionado o pacote bcryptjs e a declaração de tipos @types/bcryptjs como dependência de desenvolvimento
+- Importado no arquivo CreateUserService.ts a função hash do pacote bcryptjs
+    - Criado a variável hashedPassword utilizando a função hash para criptografar a senha
+- Criado no arquivo user.routes.ts a variável userWithoutPassword para que o retorno do response não exiba a senha criptografada
