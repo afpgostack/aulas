@@ -6,7 +6,8 @@
   <a href="#criando-tabela-de-agendamentos">Criando tabela de agendamentos</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
   <a href="#criando-model-de-agendamentos">Criando model de agendamentos</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
   <a href="#repositório-do-typeorm">Repositório do TypeORM</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
-  <a href="#model-e-migration-de-usuários">Model e migration de usuários</a>
+  <a href="#model-e-migration-de-usuários">Model e migration de usuários</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+  <a href="#relationamento-nos-models">Relacionamento nos models</a>
 </p>
 
 ### Configurando TypeORM
@@ -366,3 +367,67 @@ updated_at: Date;
 - Adicionado no arquivo /src/models/Appointments.ts os decorators CreateDateColumn e UpdateDateColumn na classe Appointment para a tabela appointments
 - Executado o migration:revert para desfazer a tabela appointments
 - Executado o migration:run para criar no banco de dados a tabela users e appointments
+
+### Relacionamento nos models
+
+```shell
+yarn typeorm migration:create -n AlterProviderFieldToProviderId
+yarn typeorm migration:revert
+yarn typeorm migration:run
+```
+
+```ts
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import User from './User'
+//...
+@Column()
+provider_id: string;
+@ManyToOne(() => User)
+@JoinColumn({ name: 'provider_id' })
+provider: User;
+//...
+```
+
+```ts
+import {MigrationInterface, QueryRunner, TableColumn, TableForeignKey} from "typeorm";
+export default class AlterProviderFieldToProviderId1610803222685 implements MigrationInterface {
+    public async up(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.dropColumn('appointments', 'provider');
+        await queryRunner.addColumn('appointments',
+            new TableColumn({
+                name: 'provider_id',
+                type: 'uuid',
+                isNullable: true,
+            }),
+        );
+        await queryRunner.createForeignKey('appointments',
+            new TableForeignKey({
+                name: 'AppointmentProvider',
+                columnNames: ['provider_id'],
+                referencedColumnNames: ['id'],
+                referencedTableName: 'users',
+                onDelete: 'SET NULL',
+                onUpdate: 'CASCADE',
+            }),
+        );
+    }
+    public async down(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.dropForeignKey('appointments', 'AppointmentProvider');
+        await queryRunner.dropColumn('appointment', 'provider_id'),
+        await queryRunner.addColumn('appointment',
+            new TableColumn({
+                name: 'provider',
+                type: 'varchar',
+            }),
+        );
+    }
+}
+```
+
+- Alterado no arquivo /src/models/Appointments.ts a coluna provider para provider_id
+- Importado no arquivo /src/models/Appointments.ts o model User
+- Adicionado no arquivo /src/models/Appointments.ts na classe Appoitment, a propriedade de relacionamento da tabela appointments com a tabela users
+- Executado o comando migration:create para criar o arquivo migration AlterProviderFieldToProviderId
+- Adicionado no arquivo $id-AlterProviderFieldToProviderId.ts as propriedades para alterar na tabela appointments, a coluna provider para provider_id realizando o relacionamento com a tabela users
+- Executado o comando migration:revert para desfazer toda a criação das tabelas do banco de dados
+- Executado o comando migration:run para criar as tabelas appointments e users com os relacionamentos
