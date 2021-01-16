@@ -112,3 +112,29 @@ export default class CreateAppointments1610757202516 implements MigrationInterfa
 >   - Comando para desfazer o que foi aplicado no banco de dados pelo arquivo migration
 > - yarn typeorm migration:show
 >   - Comando para exibir as ações executadas
+
+### Criando model de agendamentos
+
+```json
+"experimentalDecorators": true,
+"emitDecoratorMetadata": true,
+```
+
+```ts
+import { Entity, Column, PrimaryGeneratedColumn, PrimaryColumn } from 'typeorm';
+@Entity('appointments')
+class Appointment {
+    @PrimaryGeneratedColumn('uuid')
+    id: string;
+    @Column()
+    provider: string;
+    @Column('timestamp with time zone')
+    date: Date;
+}
+export default Appointment;
+```
+
+- Alterado o arquivo ./tsconfig.json descomentando as linhas experimentalDecorators e emitDecoratorMetadata como true, e descomentado a linha strictPropertyInitialization como false
+- Importado no arquivo /src/models/Appointment.ts o model Entity, Column e PrimaryGeneratedColumn do pacote typeorm
+- Removido do arquivo /src/models/Appointment.ts o constructor da classe Appointment e a importação do uuidv4
+- Adicionado no arquivo /src/models/Appointment.ts dentro da classe Appointment os métodos para registro dos dados na tabela
