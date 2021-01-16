@@ -11,7 +11,8 @@
   <a href="#criação-de-registros">Criação de registros</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
   <a href="#criptografia-de-senha">Criptografia de senha</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
   <a href="#validando-credenciais">Validando credenciais</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
-  <a href="#gerando-token-jwt">Gerando token JWT</a>
+  <a href="#gerando-token-jwt">Gerando token JWT</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+  <a href="#rotas-autenticadas">Rotas autenticadas</a>
 </p>
 
 ### Configurando TypeORM
@@ -705,3 +706,97 @@ return response.json({ userWithoutPassword, token });
 - Adicionado no arquivo sessions.routes.ts a variável token na desestruturação da chamada do método execute do serviço AuthenticateUserService
     - Adicionado ao return a variável token
 - Verificado no site jwt.io o token gerado na requisição feita pelo insomnia
+
+### Rotas autenticadas
+
+```ts
+export default {
+    jwt: {
+        secret: 'b57ef66e95392145b9035532d49ea220',
+        expiresIn: '1d',
+    },
+};
+```
+
+```ts
+//...
+import authConfig from '../config/auth'
+//...
+const { secret, expiresIn } = authConfig.jwt;
+const token = sign({}, secret, {
+    subject: user.id,
+    expiresIn,
+});
+//...
+```
+
+```ts
+declare namespace Express {
+    export interface Request {
+        user: {
+            id: string;
+        };
+    }
+}
+```
+
+```ts
+import { Request, Response, NextFunction } from 'express';
+import { verify } from 'jsonwebtoken';
+import authConfig from "../config/auth";
+interface TokenPayload {
+    iat: number;
+    exp: number;
+    sub: string;
+}
+export default function ensureAuthenticated(request: Request, response: Response, next: NextFunction): void {
+    const authHeader = request.headers.authorization;
+    if (!authHeader) {
+        throw new Error('JWT token is missing.');
+    }
+    const [, token] = authHeader.split(' ');
+    try{
+        const decoded = verify(token, authConfig.jwt.secret);
+        const { sub } = decoded as TokenPayload;
+        request.user = {
+            id: sub,
+        };
+        return next();
+    } catch {
+        throw new Error('Invalid JWT token.');
+    }
+}
+```
+
+```ts
+//...
+import ensureAuthenticated from '../middlewares/ensureAuthenticated';
+//...
+appointmentsRouter.use(ensureAuthenticated);
+//...
+```
+
+- Criado diretório: ./src/config/
+- Criado arquivo: /src/config/auth.ts
+    - Exportado a informação de jwt com os parâmetros secret e o expriresIn
+- Importado no arquivo AuthenticateUserService.ts o arquivo auth.ts
+    - Criado as variáveis secret e expiresIn desestruturado recebendo os parâmetros jwd do arquivo auth.ts
+    - Alterado na variável token as configurações da função sign utilizando as variáveis secret e expriresIn
+- Criado diretório: ./src/@types/
+    - Criado arquivo: /src/@types/express.d.ts
+        - Adicionado dentro da biblioteca express na função Request, a tipagem user com a variável id do tipo string
+- Criado diretório: ./src/middlewares/
+- Criado arquivo: /src/middlewares/ensureAuthenticated.ts
+    - Importado do express as funções Request, Response e NextFunction
+    - Importado a função verify do pacote jsonwebtoken
+    - Importado o arquivo auth.ts do diretório config
+    - Criado a interface TokenPayload para tipificar a verificação do token
+    - Criado a função ensureAuthenticated
+        - Criado a variável authHeader para armazenar as informações da requisição do cliente pelo header nomeado como authorization
+        - Verificado se existe informação na variável authHeader, caso não exista, é exibida uma mensagem de erro
+        - Criado um array com duas posições, sendo a primeira desnecessário e a segunda com o nome de token, recebendo a informação da variável authHeader dividida pelo split
+        - Criado entre try catch, a variável decoded que executa a função verify da variável token do array com o parâmetro secret do arquivo auth.ts
+        - Criado a variável sub desestruturada tipificando a variável decode como TokenPayload
+        - Criado uma request de user para identificar a sessão do usuário
+        - Retornado a função next caso a verificação do token foi válida e uma mensagem se for inválida
+- Importado no arquivo appointments.routes.ts o middleware ensureAuthenticated, sendo passado na função use para ser aplicado em todas as rotas de agendamento
