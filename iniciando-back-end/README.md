@@ -7,7 +7,8 @@
   <a href="#criando-model-de-agendamentos">Criando model de agendamentos</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
   <a href="#repositório-do-typeorm">Repositório do TypeORM</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
   <a href="#model-e-migration-de-usuários">Model e migration de usuários</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
-  <a href="#relationamento-nos-models">Relacionamento nos models</a>
+  <a href="#relationamento-nos-models">Relacionamento nos models</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+  <a href="#criação-de-registror">Criação de registros</a>
 </p>
 
 ### Configurando TypeORM
@@ -431,3 +432,105 @@ export default class AlterProviderFieldToProviderId1610803222685 implements Migr
 - Adicionado no arquivo $id-AlterProviderFieldToProviderId.ts as propriedades para alterar na tabela appointments, a coluna provider para provider_id realizando o relacionamento com a tabela users
 - Executado o comando migration:revert para desfazer toda a criação das tabelas do banco de dados
 - Executado o comando migration:run para criar as tabelas appointments e users com os relacionamentos
+
+### Criação de registros
+
+```ts
+import { getRepository } from 'typeorm';
+import User from '../models/User';
+interface Request {
+    name: string,
+    email: string,
+    password: string
+}
+class CreateUserService {
+    public async execute({ name, email, password }: Request): Promise<User> {
+        const usersRepository = getRepository(User);
+        const checkUserExists = await usersRepository.findOne({
+            where: { email },
+        });
+        if (checkUserExists) {
+            throw new Error('Email address already used.');
+        }
+        const user = usersRepository.create({
+            name,
+            email,
+            password,
+        });
+        await usersRepository.save(user);
+        return user;
+    }
+}
+export default CreateUserService;
+```
+
+```ts
+import { Router } from 'express';
+import CreateUserService from '../services/CreateUserService';
+const userRouter = Router();
+userRouter.post('/', async (request, response) => {
+    try {
+        const { name, email, password } = request.body;
+        const createUser = new CreateUserService();
+        const user = await createUser.execute({
+            name,
+            email,
+            password,
+        });
+        return response.json(user);
+    } catch (err) {
+        return response.status(400).json({ error: err.message });
+    }
+});
+export default userRouter;
+```
+
+```ts
+//...
+import userRouter from './users.routes';
+//..
+routes.use('/users', userRouter);
+//...
+```
+
+```ts
+//...
+const { provider_id, date } = request.body;
+//...
+const appointment = await createAppointment.execute({ provider_id, date: parsedDate });
+//...
+```
+
+```ts
+//...
+interface Request {
+    provider_id: string;
+    date: Date;
+}
+//...
+public async execute({ provider_id, date }: Request): Promise<Appointment> {
+//...
+const appointment = appointmentsRepository.create({
+            provider_id,
+            date: appointmentDate,
+});
+//...
+```
+
+- Criado arquivo: ./src/services/CreateUserService.ts
+    - Importado a função getRepository do pacote typeorm e importado o model User
+    - Criado a interface Request com a tipagem do usuário
+    - Criado a classe CreateUserService com o método execute
+        - Checado se o email existe no banco de dados, se sim, retorna mensagem de erro, se não, segue para chamar o método salvar
+- Criado arquivo: ./src/routes/user.routes.ts
+    - Importado a função Router do pacote express e importado o service CreateUserService
+    - Criado a rota raiz com o método post com função asíncrona
+        - Inserido entre try catch para acessar a mensagem de erro
+        - Criado as variável em desestruturação para receber os dados do body
+        - Criado a variável createUser para instanciar os métodos do service CreateUserService
+        - Criado a variável user como await chamando o método execute e passando as variáveis desestruturadas
+        - Retornado a variável user
+- Criado no arquivo ./src/routes/index.ts a rota /users para o arquivo user.routes.ts
+- Alterado no arquivo appointments.routes.ts a variável provider para provider_id
+- Alterado no arquivo CreateAppointmentService a variável provider para provider_id
+- Criado um usuário pelo insomnia, utilizado o id gerado para criar também um agendamento passando o id como provide_id
