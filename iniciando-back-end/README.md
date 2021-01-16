@@ -10,7 +10,8 @@
   <a href="#relacionamento-nos-models">Relacionamento nos models</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
   <a href="#criação-de-registros">Criação de registros</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
   <a href="#criptografia-de-senha">Criptografia de senha</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
-  <a href="#validando-credenciais">Validando credenciais</a>
+  <a href="#validando-credenciais">Validando credenciais</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+  <a href="#gerando-token-jwt">Gerando token JWT</a>
 </p>
 
 ### Configurando TypeORM
@@ -661,3 +662,46 @@ routes.use('/sessions', sessionsRouter);
         - Criado a variável userWithoutPassword para que o retorno do response não exiba a senha
         - Retornado a variável userWithoutPassword
 - Criado no arquivo ./src/routes/index.ts a rota /sessions para o arquivo sessions.routes.ts
+
+### Gerando token JWT
+
+```shell
+yarn add jsonwebtoken
+yarn add -D @types/jsonwebtoken
+```
+
+```ts
+//...
+import { sign } from 'jsonwebtoken';
+//...
+const token = sign({}, 'b57ef66e95392145b9035532d49ea220', {
+    subject: user.id,
+    expiresIn: '1d',
+});
+return {
+    user,
+    token,
+};
+//...
+```
+
+```ts
+//...
+const { user, token } = await authenticateUser.execute({
+    email,
+    password,
+});
+//...
+return response.json({ userWithoutPassword, token });
+//...
+```
+
+- Adicionado o pacote jsonwebtoken e a declaração de tipos @types/jsonwebtoken como dependência de desenvolvimento
+- Gerado um hash md5 no site md5.cz para ser usado no método sign
+- Importado no arquivo ./src/services/AuthenticateUserService.ts a função sign do pacote jsonwebtoken
+    - Adicionado na interface Response o tipo da variável token
+    - Criado a variável token que executa o método sign passando as configurações de header, payload e signature
+    - Adicionado ao return a variável token
+- Adicionado no arquivo sessions.routes.ts a variável token na desestruturação da chamada do método execute do serviço AuthenticateUserService
+    - Adicionado ao return a variável token
+- Verificado no site jwt.io o token gerado na requisição feita pelo insomnia
