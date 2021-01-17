@@ -12,7 +12,8 @@
   <a href="#criptografia-de-senha">Criptografia de senha</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
   <a href="#validando-credenciais">Validando credenciais</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
   <a href="#gerando-token-jwt">Gerando token JWT</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
-  <a href="#rotas-autenticadas">Rotas autenticadas</a>
+  <a href="#rotas-autenticadas">Rotas autenticadas</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+  <a href="#upload-de-arquivos">Upload de arquivos</a>
 </p>
 
 ### Configurando TypeORM
@@ -800,3 +801,78 @@ appointmentsRouter.use(ensureAuthenticated);
         - Criado uma request de user para identificar a sessão do usuário
         - Retornado a função next caso a verificação do token foi válida e uma mensagem se for inválida
 - Importado no arquivo appointments.routes.ts o middleware ensureAuthenticated, sendo passado na função use para ser aplicado em todas as rotas de agendamento
+
+### Upload de arquivos
+
+```shell
+yarn typeorm migration:create -n AddAvatarFieldToUsers
+yarn typeorm migration:run
+yarn add multer
+yarn add -D @types/multer
+```
+
+```git
+tmp/*
+!tmp/.gitkeep
+```
+
+```ts
+import {MigrationInterface, QueryRunner, TableColumn} from "typeorm";
+export class AddAvatarFieldToUsers1610861827719 implements MigrationInterface {
+    public async up(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.addColumn('users',
+            new TableColumn({
+                name: 'avatar',
+                type: 'varchar',
+                isNullable: true,
+            }),
+        );
+    }
+    public async down(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.dropColumn('users', 'avatar');
+    }
+}
+```
+
+```ts
+import path from 'path';
+import crypto from 'crypto';
+import multer from 'multer';
+export default {
+    storage: multer.diskStorage({
+        destination: path.resolve(__dirname, '..', '..', 'tmp'),
+        filename(request, file, callback) {
+            const fileHash = crypto.randomBytes(10).toString('hex');
+            const fileName = `${fileHash}-${file.originalname}`;
+            return callback(null, fileName);
+        },
+    }),
+};
+```
+
+```ts
+//...
+import uploadConfig from '../config/upload';
+import ensureAuthenticated from '../middlewares/ensureAuthenticated';
+//...
+const upload = multer(uploadConfig);
+//...
+usersRouter.patch('/avatar', ensureAuthenticated, upload.single('avatar'), async (request, response) => {
+    return response.json({ ok: true });
+});
+//...
+```
+
+- Criado o migration AddAvatarFieldToUser
+    - Criado a coluna avatar do tipo varchar na tabela users
+    - Executado migration:run para criar a coluna avatar
+- Adicionado o pacote multer o a tipagem @types/multer
+- Criado diretório: ./tmp/
+    - Criado arquivo: /tmp/.gitkeep
+- Adicionado no arquivo ./.gitignore o arquivo .gitkeep para manter o versionamento do diretório ./tmp/
+- Criado arquivo: ./src/config/upload.ts
+    - Importado os pacotes path, crypto e multer
+    - Adicionado a configuração para salvar os uploads no diretório ./tmp/
+- Importado no arquivo user.routes.ts o pacote do multer, o middleware ensureAuthenticated e o arquivo upload.ts
+    - Criado a variável upload chamando a função multer passando a importação do upload.ts como parâmetro
+    - Criado a rota /avatar com o método patch no modo assíncrono, passando a autenticação do usuário e o upload em sigle
