@@ -14,7 +14,8 @@
   <a href="#gerando-token-jwt">Gerando token JWT</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
   <a href="#rotas-autenticadas">Rotas autenticadas</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
   <a href="#upload-de-arquivos">Upload de arquivos</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
-  <a href="#atualizando-avatar">Atualizando avatar</a>
+  <a href="#atualizando-avatar">Atualizando avatar</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+  <a href="#servindo-arquivos-estáticos">Servindo arquivos estáticos</a>
 </p>
 
 ### Configurando TypeORM
@@ -976,3 +977,16 @@ usersRouter.patch('/avatar', ensureAuthenticated, upload.single('avatar'), async
     - Criado a variável user chamando o método execute do serviço updateUserAvatar em await, passando os valores das variáveis user_id e avatarFilename
     - Criado a variável userWithoutPassword recebendo os dados da variável user sem o dado de password
     - Retornado a variável userWithoutPassword
+
+### Servindo arquivos estáticos
+
+```ts
+//...
+import uploadConfig from './config/upload';
+//...
+app.use('/files', express.static(uploadConfig.directory));
+//...
+```
+
+- Importado o config upload no arquivo /src/server.ts
+    - Criado a rota /files utilizando o método express.static passando como parâmetro a variável directory do config upload
