@@ -13,7 +13,8 @@
   <a href="#validando-credenciais">Validando credenciais</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
   <a href="#gerando-token-jwt">Gerando token JWT</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
   <a href="#rotas-autenticadas">Rotas autenticadas</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
-  <a href="#upload-de-arquivos">Upload de arquivos</a>
+  <a href="#upload-de-arquivos">Upload de arquivos</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+  <a href="#atualizando-avatar">Atualizando avatar</a>
 </p>
 
 ### Configurando TypeORM
@@ -876,3 +877,102 @@ usersRouter.patch('/avatar', ensureAuthenticated, upload.single('avatar'), async
 - Importado no arquivo user.routes.ts o pacote do multer, o middleware ensureAuthenticated e o arquivo upload.ts
     - Criado a variável upload chamando a função multer passando a importação do upload.ts como parâmetro
     - Criado a rota /avatar com o método patch no modo assíncrono, passando a autenticação do usuário e o upload em sigle
+
+### Atualizando avatar
+
+```ts
+//...
+@Column()
+avatar: string;
+//...
+```
+
+```ts
+//...
+const tmpFolder = path.resolve(__dirname, '..', '..', 'tmp');
+//...
+directory: tmpFolder,
+//...
+destination: tmpFolder,
+//...
+```
+
+```ts
+import path from 'path';
+import fs from 'fs';
+import { getRepository } from 'typeorm';
+import uploadConfig from '../config/upload';
+import User from '../models/User';
+interface Request {
+    user_id: string,
+    avatarFilename: string,
+}
+class UpdateUserAvatarService {
+    public async execute({ user_id, avatarFilename }: Request): Promise<User> {
+        const usersRepository = getRepository(User);
+        const user = await usersRepository.findOne(user_id);
+        if (!user) {
+            throw new Error('Only authenticated users can change avatar.');
+        }
+        if (user.avatar) {
+            const userAvatarFilePath = path.join(uploadConfig.directory, user.avatar);
+            const userAvatarFileExists = await fs.promises.stat(userAvatarFilePath);
+            if (userAvatarFileExists) {
+                await fs.promises.unlink(userAvatarFilePath);
+            }
+        }
+        user.avatar = avatarFilename;
+        await usersRepository.save(user);
+        return user;
+    }
+}
+export default UpdateUserAvatarService;
+```
+
+```ts
+//...
+usersRouter.patch('/avatar', ensureAuthenticated, upload.single('avatar'), async (request, response) => {
+    try {
+        const updateUserAvatar = new UpdateUserAvatarService();
+        const user = await updateUserAvatar.execute({
+            user_id: request.user.id,
+            avatarFilename: request.file.filename,
+        });
+        const userWithoutPassword = {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            avatar: user.avatar,
+            created_at: user.created_at,
+            updated_at: user.updated_at,
+          };
+        return response.json(userWithoutPassword);
+    } catch (err) {
+        return response.status(400).json({ error: err.message });
+    }
+});
+//...
+```
+- Adicionado no arquivo /src/model/User.ts dentro a classe Users, a coluna avatar como string
+- Criado no arquivo /src/config/upload.ts a variável tmpFolder chamando o método path.resolve com o caminho do diretório tmp
+    - Criado o nome directory para a variável tmpFolder
+    - Utilizado a variável tmpFolder no parâmetro destination método multer.diskStorage
+- Criado arquivo: /src/services/UpdateUserAvatarService.ts
+    - Importados o pacote path, o pacote fs, a função getRepository do pacote typeorm, o config upload e o model User
+    - Criado a interface Request como tipagem
+    - Criado a classe UpdateUserAvatarService com o método execute assíncrono com a tipagem Request
+    - Criado a variável userRepository chamando a função getRepository passando o model User
+    - Criado a variável user chamando a função getRepository com o método findOne passando user_id como parâmetro para encontrar o usuário no banco de dados
+    - Retornado uma mensagem de erro caso o usuário não foi encontrado
+    - Verificado se o usuário possui avatar, caso o usuário encontrado
+        - Criado a variável userAvatarFilePath que recebe o join da variável directory do config upload com o os dados da coluna avatar da tabela users do banco de dados
+        - Criado a variável userAvatarFileExists que recebe em await o método fs.promises.stat tendo a variável userAvatarFilePath como parâmetro
+        - Verificado se o arquivo do avatar exite utilizando a variável userAvatarFileExists, se sim, apaga a imagem
+    - Utilizado a variável user que possui a entidade já instanciada para atualizar a coluna avatar recebendo o dado da variável avatarFilename
+    - Chamado o método usersRepository.save em await, para salvar no banco de dados os dados da variável user, com a imagem atualizada
+    - Retornado a variável user
+- Importado no arquivo users.routes.ts o serviço UpdateUserAvatarService
+    - Na rota /avatar foi adicionado o try catch e dentro foi criado a variável updateUserAvatar para instanciar o serviço UpdateUserAvatarService
+    - Criado a variável user chamando o método execute do serviço updateUserAvatar em await, passando os valores das variáveis user_id e avatarFilename
+    - Criado a variável userWithoutPassword recebendo os dados da variável user sem o dado de password
+    - Retornado a variável userWithoutPassword
