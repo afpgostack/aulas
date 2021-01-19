@@ -16,7 +16,8 @@
   <a href="#upload-de-arquivos">Upload de arquivos</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
   <a href="#atualizando-avatar">Atualizando avatar</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
   <a href="#servindo-arquivos-estáticos">Servindo arquivos estáticos</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
-  <a href="#criando-classe-de-erro">Criando classe de erro</a>
+  <a href="#criando-classe-de-erro">Criando classe de erro</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+  <a href="#lidando-com-erros">Lidando com erros</a>
 </p>
 
 ### Configurando TypeORM
@@ -1036,3 +1037,45 @@ return response.status(err.statusCode).json({ error: err.message });
 - Importado no arquivo CreateAppointmentService.ts e CreateUserService.ts o arquivo AppError
     - Trocado Error por AppError
 - Trocado no arquivo sessions.routes.ts 400 no status por err.statusCode
+
+### Lidando com erros
+
+```shell
+yarn add express-async-errors
+```
+
+```ts
+import 'reflect-metadata';
+import express, { Request, Response, NextFunction } from 'express';
+import 'express-async-errors';
+import routes from './routes';
+import uploadConfig from './config/upload';
+import AppError from './errors/AppError';
+import './database';
+const app = express();
+app.use(express.json());
+app.use('/files', express.static(uploadConfig.directory));
+app.use(routes);
+app.use((err: Error, request: Request, response: Response, next: NextFunction) => {
+    if (err instanceof AppError) {
+        return response.status(err.statusCode).json({
+            status: 'error',
+            message: err.message,
+        });
+    }
+    return response.status(500).json({
+        status: 'error',
+        message: 'Internal server error.',
+    });
+},);
+app.listen(3333, () => {
+    console.log('Server started on port 3333!');
+});
+```
+
+- Adicionado o pacote express-async-errors
+- Retirado todos os try catch de todas as rotas
+- Importado no arquivo /src/server.ts as funções Request, Response e NextFunction do pacote express, o pacote express-async-errors e o arquivo AppError
+    - Adicionado o método use após todas as configurações de rotas passando como parâmetros error, request, response e next
+        - Verificado se o erro foi instanciado no AppError, se sim, retorna a mensagem com o código e a mensagem
+        - Retornado a resposta com o código 500 e a mensagem Internal server error caso o erro não tenha sido instanciado pelo AppError
