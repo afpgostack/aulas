@@ -15,7 +15,8 @@
   <a href="#rotas-autenticadas">Rotas autenticadas</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
   <a href="#upload-de-arquivos">Upload de arquivos</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
   <a href="#atualizando-avatar">Atualizando avatar</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
-  <a href="#servindo-arquivos-estáticos">Servindo arquivos estáticos</a>
+  <a href="#servindo-arquivos-estáticos">Servindo arquivos estáticos</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+  <a href="#criando-classe-de-erro">Criando classe de erro</a>
 </p>
 
 ### Configurando TypeORM
@@ -990,3 +991,48 @@ app.use('/files', express.static(uploadConfig.directory));
 
 - Importado o config upload no arquivo /src/server.ts
     - Criado a rota /files utilizando o método express.static passando como parâmetro a variável directory do config upload
+
+### Criando classe de erro
+
+```ts
+class AppError {
+    public readonly message: string;
+    public readonly statusCode: number;
+    constructor(message: string, statusCode = 400) {
+        this.message = message;
+        this.statusCode = statusCode;
+    }
+}
+export default AppError;
+```
+
+```ts
+//...
+import AppError from '../errors/AppError';
+//...
+throw new AppError('Incorrect email/password combination.', 401);
+//...
+throw new AppError('This appointment is alredy booked.');
+//...
+throw new AppError('Email address already used.');
+//...
+throw new AppError('Only authenticated users can change avatar.', 401);
+//...
+```
+
+```ts
+//...
+return response.status(err.statusCode).json({ error: err.message });
+//...
+```
+
+- Criado diretório: ./src/errors/
+- Criado arquivo: /src/errors/AppError.ts
+    - Criado a classe AppError
+        - Criado dentro da classe AppError as variáveis message como string e statusCode como number, públicas e somente leitura
+        - Criado um constructor com as variáveis message e statusCode
+- Importado nos arquivos AuthenticateUserService.ts,UpdateUserAvatarService.ts e ensureAuthenticated.ts o arquivo AppError
+    - Trocado onde possui Error por AppError, com a mensagem e o código 401
+- Importado no arquivo CreateAppointmentService.ts e CreateUserService.ts o arquivo AppError
+    - Trocado Error por AppError
+- Trocado no arquivo sessions.routes.ts 400 no status por err.statusCode
