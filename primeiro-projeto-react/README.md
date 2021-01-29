@@ -4,7 +4,8 @@
 
 <p align="center">
   <a href="#criando-projeto">Criando projeto</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
-  <a href="#criando-rotas">Criando rotas</a>
+  <a href="#criando-rotas">Criando rotas</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+  <a href="#utilizando-styled-components">Utilizando Styled Components</a>
 </p>
 
 ### Criando projeto
@@ -55,7 +56,7 @@ export default App;
 </html>
 ```
 
-- Criado diretórios: /projects/aulas/nivel03/primeiro-projeto-react
+- Criado diretórios: /projects/aulas/nivel03/primeiro-projeto-react/
 - Criado o novo projeto react com o comando npx create-react-app
 - Aberto o VSCode no diretório primeiro-projeto-react
 - Instalado no VSCode a extensão EditorConfig for VS Code
@@ -177,18 +178,102 @@ export default App;
 
 - Adicionado a biblioteca para criação de rotas
 - Adicionado os tipos da biblioteca de rotas
-- Criado diretórios: ./src/pages/Dashboard
+- Criado diretórios: ./src/pages/Dashboard/
 - Criado arquivo: /src/page/Dashboard/index.tsx
   - Importado a biblioteca do react
   - Criado a função de componente Dashboard que retorna um título
-- Criado diretório: ./src/pages/Repository
+- Criado diretório: ./src/pages/Repository/
 - Criado arquivo: /src/pages/Repository/index.tsx
   - Importado a biblioteca do react
   - Criado a função de componente Repository que retorna um título
-- Criado diretório: ./src/routes
+- Criado diretório: ./src/routes/
 - Criado arquivo:: /src/routes/index.tsx
   - Importado a biblioteca do react e as funções Switch e Route da biblioteca de rotas
   - Importado os diretórios Dashboard e Repository
   - Criado a função de componente Routes utilizando as funções Switch e Route para as rotas / e /repository
 - Importado no arquivo App.tsx a função BrowserRouter da biblioteca de rotas e o diretório routes
   - Alterado a função App para função de componente retornando as rotas dentro do componente BrowserRouter
+
+### Utilizando Styled Components
+
+```shell
+yarn add styled-components
+yarn add -D @types/styled-components
+```
+
+```ts
+import styled from 'styled-components';
+export const Title = styled.h1`
+  font-size: 48px;
+  color: #3a3a3a;
+`;
+```
+
+```tsx
+import React from 'react';
+import { Title } from './styles';
+const Dashboard: React.FC = () => {
+  return <Title>Explore repositórios no Github</Title>;
+};
+export default Dashboard;
+```
+
+```ts
+import { createGlobalStyle } from 'styled-components';
+import githubBackground from '../assets/github-background.svg';
+export default createGlobalStyle`
+  * {
+    margin: 0;
+    padding: 0;
+    outline: 0;
+    box-sizing: border-box;
+  }
+  body {
+    background: #f0f0f5 url(${githubBackground}) no-repeat 70% top;
+    -webkit-font-smoothing: antialiased;
+  }
+  body, input, button {
+    font: 16px Roboto, sans-serif;
+  }
+  #root {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 40px 20px;
+  }
+  button {
+    cursor: pointer;
+  }
+`;
+```
+
+```tsx
+import React from 'react';
+import { BrowserRouter } from 'react-router-dom';
+import GlobalStyle from './styles/global';
+import Routes from './routes';
+const App: React.FC = () => (
+  <>
+    <BrowserRouter>
+      <Routes />
+    </BrowserRouter>
+    <GlobalStyle />
+  </>
+);
+export default App;
+```
+
+- Adicionado a biblioteca Styled Components e a sua tipagem como dependêcia de desenvolvimento
+- Instalado o VSCode a extensão vscode-styled-components
+- Criado arquivo: /src/pages/Dashboard/styles.ts
+  - Importado a biblioteca Styled Components
+  - Criado a variável Title e configuraco o css para h1
+- Importado no arquivo index.tsx do Dashboard, a variável Title do arquivo styles.ts
+- Importado no arquivo index.html a fonte Roboto
+- Criado diretório: ./src/assets/
+  - Baixado o arquivo github-backgroud.svg no diretório assets
+- Criado diretório: ./src/styles/
+- Criado arquivo: /src/styles/global.ts
+  - Importado o componente createGlobalStyle da biblioteca Styled Components e a imagem github-background.svg
+  - Exportado o css do createGlobalStyle
+- Importado no arquivo App.tsx o arquivo global.ts
+  - Adicionado o css do global.ts na função App
