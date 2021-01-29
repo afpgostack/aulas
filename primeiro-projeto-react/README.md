@@ -5,7 +5,8 @@
 <p align="center">
   <a href="#criando-projeto">Criando projeto</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
   <a href="#criando-rotas">Criando rotas</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
-  <a href="#utilizando-styled-components">Utilizando Styled Components</a>
+  <a href="#utilizando-styled-components">Utilizando Styled Components</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+  <a href="#estilizando-dashboard">Estilizando dashboard</a>
 </p>
 
 ### Criando projeto
@@ -266,7 +267,7 @@ export default App;
 - Instalado o VSCode a extensão vscode-styled-components
 - Criado arquivo: /src/pages/Dashboard/styles.ts
   - Importado a biblioteca Styled Components
-  - Criado a variável Title e configuraco o css para h1
+  - Criado a variável Title e configurado o css para h1
 - Importado no arquivo index.tsx do Dashboard, a variável Title do arquivo styles.ts
 - Importado no arquivo index.html a fonte Roboto
 - Criado diretório: ./src/assets/
@@ -277,3 +278,146 @@ export default App;
   - Exportado o css do createGlobalStyle
 - Importado no arquivo App.tsx o arquivo global.ts
   - Adicionado o css do global.ts na função App
+
+### Estilizando dashboard
+
+```shell
+yarn add polished react-icons
+```
+
+```ts
+import styled from 'styled-components';
+import { shade } from 'polished';
+export const Title = styled.h1`
+  font-size: 48px;
+  color: #3a3a3a;
+  max-width: 450px;
+  line-height: 56px;
+  margin-top: 80px;
+`;
+export const Form = styled.form`
+  margin-top: 40px;
+  max-width: 700px;
+  display: flex;
+  input {
+    flex: 1;
+    height: 70px;
+    padding: 0 24px;
+    border: 0;
+    border-radius: 5px 0 0 5px;
+    color: #3a3a3a;
+    &::placeholder {
+      color: #a8a8b3;
+    }
+  }
+  button {
+    width: 210px;
+    height: 70px;
+    background: #04d361;
+    border-radius: 0 5px 5px 0;
+    border: 0;
+    color: #fff;
+    font-weight: bold;
+    transition: background-color 0.2s;
+    &:hover {
+      background: ${shade(0.2, '#04d361')};
+    }
+  }
+`;
+export const Repositories = styled.div`
+  margin-top: 80px;
+  max-width: 700px;
+  a {
+    background: #fff;
+    border-radius: 5px;
+    width: 100%;
+    padding: 24px;
+    display: block;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    transition: transform 0.2s;
+    & + a {
+      margin-top: 16px;
+    }
+    &:hover {
+      transform: translateX(10px);
+    }
+    img {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+    }
+    div {
+      margin-left: 16px;
+      strong {
+        font-size: 20px;
+        color: #3d3d4d;
+      }
+      p {
+        font-size: 18px;
+        color: #a8a8b3;
+        margin-top: 4px;
+      }
+    }
+    svg {
+      margin-left: auto;
+      color: #cbcbd6;
+    }
+  }
+`;
+```
+
+```tsx
+import React from 'react';
+import { FiChevronRight } from 'react-icons/fi';
+import logoImg from '../../assets/logo.svg';
+import { Title, Form, Repositories } from './styles';
+const Dashboard: React.FC = () => {
+  return (
+    <>
+      <img src={logoImg} alt="Github Explorer" />
+      <Title>Explore repositórios no Github</Title>
+      <Form>
+        <input placeholder="Digite o nome do repositório" />
+        <button type="submit">Pesquisar</button>
+      </Form>
+      <Repositories>
+        <a href="teste">
+          <img
+            src="https://avatars.githubusercontent.com/u/49215447?s=460&u=78e7059548bb7614039927ee0a5c7ffc5b7e4b9f&v=4"
+            alt="Alisson Fernandes"
+          />
+          <div>
+            <strong>É o repositório.</strong>
+            <p>É a descrição.</p>
+          </div>
+          <FiChevronRight size={20} />
+        </a>
+        <a href="teste">
+          <img
+            src="https://avatars.githubusercontent.com/u/49215447?s=460&u=78e7059548bb7614039927ee0a5c7ffc5b7e4b9f&v=4"
+            alt="Alisson Fernandes"
+          />
+          <div>
+            <strong>É o repositório.</strong>
+            <p>É a descrição.</p>
+          </div>
+          <FiChevronRight size={20} />
+        </a>
+      </Repositories>
+    </>
+  );
+};
+export default Dashboard;
+```
+
+- Adicionado as bibliotecas polished e react-icons
+- Baixado o arquivo logo.svg no diretório assets
+- Ajustado no arquivo styles.ts do Dashboard o css do h1
+  - Criado a variável Form e configurado o css para form, input, button
+  - Importado a função shade da biblioteca polished e utilizado no houver do botão
+  - Criado a variável Repositories e configurado o css para div, a, img,
+- Importado no arquivo index.tsx do Dashboard a imagem logo.svg e adicionada na função de componente Dashboard
+  - Importado o css Form e Repositories do arquivo styles.ts e adicionado os componentes Form e Repositories na função de componente Dashboard
+  - Importado a função FiChevronRight da biblioteca react-icon/fi e utilizado no componente Repositories
