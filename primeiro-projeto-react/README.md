@@ -6,7 +6,8 @@
   <a href="#criando-projeto">Criando projeto</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
   <a href="#criando-rotas">Criando rotas</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
   <a href="#utilizando-styled-components">Utilizando Styled Components</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
-  <a href="#estilizando-dashboard">Estilizando dashboard</a>
+  <a href="#estilizando-dashboard">Estilizando dashboard</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+  <a href="#conectando-a-api">Conectando a API</a>
 </p>
 
 ### Criando projeto
@@ -421,3 +422,103 @@ export default Dashboard;
 - Importado no arquivo index.tsx do Dashboard a imagem logo.svg e adicionada na função de componente Dashboard
   - Importado o css Form e Repositories do arquivo styles.ts e adicionado os componentes Form e Repositories na função de componente Dashboard
   - Importado a função FiChevronRight da biblioteca react-icon/fi e utilizado no componente Repositories
+
+### Conectando a API
+
+```shell
+yarn add axios
+```
+
+```ts
+import axios from 'axios';
+const api = axios.create({
+  baseURL: 'http://api.github.com/',
+});
+export default api;
+```
+
+```tsx
+import React, { useState, FormEvent } from 'react';
+import { FiChevronRight } from 'react-icons/fi';
+import api from '../../services/api';
+import logoImg from '../../assets/logo.svg';
+import { Title, Form, Repositories } from './styles';
+interface Repository {
+  full_name: string;
+  description: string;
+  owner: {
+    login: string;
+    avatar_url: string;
+  };
+}
+const Dashboard: React.FC = () => {
+  const [newRepo, setNewRepo] = useState('');
+  const [repositories, setRepositories] = useState<Repository[]>([]);
+  async function handleAddRepository(
+    event: FormEvent<HTMLFormElement>,
+  ): Promise<void> {
+    event.preventDefault();
+    const response = await api.get<Repository>(`repos/${newRepo}`);
+    const repository = response.data;
+    setRepositories([...repositories, repository]);
+    setNewRepo('');
+  }
+  return (
+    <>
+      <img src={logoImg} alt="Github Explorer" />
+      <Title>Explore repositórios no Github</Title>
+      <Form onSubmit={handleAddRepository}>
+        <input
+          value={newRepo}
+          onChange={e => setNewRepo(e.target.value)}
+          placeholder="Digite o nome do repositório"
+        />
+        <button type="submit">Pesquisar</button>
+      </Form>
+      <Repositories>
+        {repositories.map(repository => (
+          <a key={repository.full_name} href="teste">
+            <img
+              src={repository.owner.avatar_url}
+              alt={repository.owner.login}
+            />
+            <div>
+              <strong>{repository.full_name}</strong>
+              <p>{repository.description}</p>
+            </div>
+            <FiChevronRight size={20} />
+          </a>
+        ))}
+      </Repositories>
+    </>
+  );
+};
+export default Dashboard;
+```
+
+```ts
+//...
+div {
+  margin: 0 16px;
+  flex: 1;
+//...
+```
+
+- Adicionado a biblioteca axios
+- Criado diretório: ./src/services/
+- Criado arquivo: /src/services/api.ts
+- Importado no arquivo api.ts a biblioteca axios
+  - Criado a variável api utilizando o método create do axios passando a url da api do github
+- Importado no arquivo index.tsx do dashboard o arquivo api.ts e as funções useState e FormEvent da biblioteca react
+  - Criado o array com a variável newRepo e a função setNewRepo utilizando a função useState com o valor inicial vazio
+  - Utilizado no input do formulário a variável newRepo para armazenar os dados que foram digitado, e a variável setNewRepo para alterar o valor do estado com o valor do evento
+  - Criado a interface Repository configurando a tipagem para full_name, description, login e avatar_url
+  - Criado o array com a variável repositories e a função setRepositories utilizando a função useState do tipo Repository para armazenar o estado dos dados
+  - Criado a função assíncrona handleAddRepository recebendo os valores do evento através da função FormEvent, e utilizada no Form como onSubmit
+    - Criado o evento para não exibir os dados em tela
+    - Criado a variável response que faz a chamada à api em await com o método get tipado como Repository, recebendo os dados retornados pela busca referente ao valor da variável newRepo
+    - Criado a variável repository que recebe os dados da variável response
+    - Chamado a função setRepositories para atualizar o estado do array repositories, com os dados já existentes no array adicionando os novos dados
+    - Chamado a função setNewRepo passando o valor vazio para limpar o que foi digitado no formulário
+  - Adicionado no componente Repositories a função map do array repositories para exibir em tela os dados que estão no  array
+- Alterado no arquivo styles.ts do dashboard o css da div do componente Repository para exibir melhor a descrição
