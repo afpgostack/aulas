@@ -11,7 +11,8 @@
   <a href="#lidando-com-erros">Lidando com erros</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
   <a href="#salvando-no-storage">Salvando no storage</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
   <a href="#navegando-entre-rotas">Navegando entre rotas</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
-  <a href="#estilizando-detalhe">Estilizando detalhe</a>
+  <a href="#estilizando-detalhe">Estilizando detalhe</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+  <a href="#listando-issues-da-api">Listando issues da API</a>
 </p>
 
 ### Criando projeto
@@ -899,3 +900,113 @@ export default Repository;
   - Adiconado o componente Issues
     - Adicionado o link com o icone FiChevronRight para o endereço da issue
       - Adicionado uma div com um strong para o título da issue e um p para a descrição da issue
+
+### Listando issues da API
+
+```tsx
+import React, { useEffect, useState } from 'react';
+import { FiChevronsLeft, FiChevronRight } from 'react-icons/fi';
+import { useRouteMatch, Link } from 'react-router-dom';
+import api from '../../services/api';
+import logoImg from '../../assets/logo.svg';
+import { Header, RepositoryInfo, Issues } from './styles';
+interface RepositoryParams {
+  repository: string;
+}
+interface Repository {
+  full_name: string;
+  description: string;
+  stargazers_count: number;
+  forks_count: number;
+  open_issues_count: number;
+  owner: {
+    login: string;
+    avatar_url: string;
+  };
+}
+interface Issue {
+  id: number;
+  title: string;
+  html_url: string;
+  user: {
+    login: string;
+  };
+}
+const Repository: React.FC = () => {
+  const [repository, setRepository] = useState<Repository | null>(null);
+  const [issues, setIssues] = useState<Issue[]>([]);
+  const { params } = useRouteMatch<RepositoryParams>();
+  useEffect(() => {
+    api.get(`repos/${params.repository}`).then(response => {
+      setRepository(response.data);
+    });
+    api.get(`repos/${params.repository}/issues`).then(response => {
+      setIssues(response.data);
+    });
+  }, [params.repository]);
+  return (
+    <>
+      <Header>
+        <img src={logoImg} alt="Github Explorer" />
+        <Link to="/">
+          <FiChevronsLeft size={16} />
+          Voltar
+        </Link>
+      </Header>
+      {repository ? (
+        <RepositoryInfo>
+          <header>
+            <img
+              src={repository.owner.avatar_url}
+              alt={repository.owner.login}
+            />
+            <div>
+              <strong>{repository.full_name}</strong>
+              <p>{repository.description}</p>
+            </div>
+          </header>
+          <ul>
+            <li>
+              <strong>{repository.stargazers_count}</strong>
+              <span>Stars</span>
+            </li>
+            <li>
+              <strong>{repository.forks_count}</strong>
+              <span>Forks</span>
+            </li>
+            <li>
+              <strong>{repository.open_issues_count}</strong>
+              <span>Issues abertas</span>
+            </li>
+          </ul>
+        </RepositoryInfo>
+      ) : (
+        <p>Carregando...</p>
+      )}
+      <Issues>
+        {issues.map(issue => (
+          <a key={issue.id} href={issue.html_url}>
+            <div>
+              <strong>{issue.title}</strong>
+              <p>{issue.user.login}</p>
+            </div>
+            <FiChevronRight size={20} />
+          </a>
+        ))}
+      </Issues>
+    </>
+  );
+};
+export default Repository;
+```
+
+- Repository/index.tsx
+  - Importado as funções useEffect e useState da biblioteca react e o arquivo api.ts
+  - Criado as interfaces Repository e Issue passando os tipos dos dados que serão exibidos
+  - Criado o estado com a tipagem Repository ou null, tendo a variável repository e a função setRepository, sendo o valor inicial null
+  - Criado o estado com a tipagem array de Issue, tendo a variável issues e a função setIssues, sendo o valor inicial um array vazio
+  - Adicionado na função de componentes Repository a condicional para verificar se a variável repositório está null, caso não, é carregado o componente RepositoryInfo
+    - Alterado no componente RepositoryInfo os parâmetros para exibir as informações contidas na variável repository
+    - Adicionado no componente Issues o método map no array issues, carregando os valores na variável issue e alterando os parâmetros para exibir as informações contidas na variável issue
+      - Alterado de Link para a
+  - Utilizado a função useEffect chamando método get da api para coletar os dados do repositório e das issues, retornando a execução das funções setRepository e setIssues, respectivamente
