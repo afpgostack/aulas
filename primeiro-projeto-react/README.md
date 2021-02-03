@@ -7,7 +7,8 @@
   <a href="#criando-rotas">Criando rotas</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
   <a href="#utilizando-styled-components">Utilizando Styled Components</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
   <a href="#estilizando-dashboard">Estilizando dashboard</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
-  <a href="#conectando-a-api">Conectando a API</a>
+  <a href="#conectando-a-api">Conectando a API</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+  <a href="#lidando-com-erros">Lidando com erros</a>
 </p>
 
 ### Criando projeto
@@ -522,3 +523,97 @@ div {
     - Chamado a função setNewRepo passando o valor vazio para limpar o que foi digitado no formulário
   - Adicionado no componente Repositories a função map do array repositories para exibir em tela os dados que estão no  array
 - Alterado no arquivo styles.ts do dashboard o css da div do componente Repository para exibir melhor a descrição
+
+### Lidando com erros
+
+```tsx
+//...
+import { Title, Form, Repositories, Error } from './styles';
+//...
+const Dashboard: React.FC = () => {
+  const [newRepo, setNewRepo] = useState('');
+  const [inputError, setInputError] = useState('');
+  const [repositories, setRepositories] = useState<Repository[]>([]);
+  async function handleAddRepository(
+    event: FormEvent<HTMLFormElement>,
+  ): Promise<void> {
+    event.preventDefault();
+    if (!newRepo) {
+      setInputError('Digite o autor/nome do repositório');
+      return;
+    }
+    try {
+      const response = await api.get<Repository>(`repos/${newRepo}`);
+      const repository = response.data;
+      setRepositories([...repositories, repository]);
+      setNewRepo('');
+      setInputError('');
+    } catch (err) {
+      setInputError('Erro na busca por esse repositório');
+    }
+  }
+  return (
+    <>
+      <img src={logoImg} alt="Github Explorer" />
+      <Title>Explore repositórios no Github</Title>
+      <Form hasError={!!inputError} onSubmit={handleAddRepository}>
+        <input
+          value={newRepo}
+          onChange={e => setNewRepo(e.target.value)}
+          placeholder="Digite o nome do repositório"
+        />
+        <button type="submit">Pesquisar</button>
+      </Form>
+      {inputError && <Error>{inputError}</Error>}
+//...
+```
+
+```ts
+import styled, { css } from 'styled-components';
+
+import { shade } from 'polished';
+
+interface FormProps {
+  hasError: boolean;
+}
+//...
+export const Form = styled.form<FormProps>`
+  margin-top: 40px;
+  max-width: 700px;
+
+  display: flex;
+
+  input {
+    flex: 1;
+    height: 70px;
+    padding: 0 24px;
+    border: 0;
+    border-radius: 5px 0 0 5px;
+    color: #3a3a3a;
+    border: 2px solid #fff;
+    border-right: 0;
+
+    ${props =>
+      props.hasError &&
+      css`
+        border-color: #c53030;
+      `}
+...`
+export const Error = styled.span`
+  display: block;
+  color: #c53030;
+  margin-top: 8px;
+`;
+//...
+```
+
+- Criado no arquivo index.tsx do dashboard o estado com a variável inputError e a função setInputError
+  - Criado na função handleAddRepository a verificação se a variável newRepo está vazia, se sim, executa a função setInputError com uma mensagem
+  - Adicionado try com as variáveis response e repository, e as funções setRepositories, setNewRepocatch e setInputError vazio, e o catch executanto a função setInputError com uma mensagem
+  - Importado o estilo Error
+  - Adicionado no return o componente inputError carregando o estilo Error
+  - Adicionado no Form a propriedade hasError verificando se a variável inputError está truthy ou falsy
+- Criado no arquivo styles.ts do dashboard o css Error
+  - Criado a interface FormProps passando o tipo boolean para hasError, passando o FormProps no estilo do Form
+  - Importado a função css da biblioteca styled-components
+  - Adicionado no estilo do input o css para o hasError
