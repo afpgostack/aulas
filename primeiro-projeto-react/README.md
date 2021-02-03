@@ -8,7 +8,8 @@
   <a href="#utilizando-styled-components">Utilizando Styled Components</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
   <a href="#estilizando-dashboard">Estilizando dashboard</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
   <a href="#conectando-a-api">Conectando a API</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
-  <a href="#lidando-com-erros">Lidando com erros</a>
+  <a href="#lidando-com-erros">Lidando com erros</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+  <a href="#salvando-no-storage">Salvando no storage</a>
 </p>
 
 ### Criando projeto
@@ -617,3 +618,36 @@ export const Error = styled.span`
   - Criado a interface FormProps passando o tipo boolean para hasError, passando o FormProps no estilo do Form
   - Importado a função css da biblioteca styled-components
   - Adicionado no estilo do input o css para o hasError
+
+### Salvando no storage
+
+```tsx
+import React, { useState, useEffect, FormEvent } from 'react';
+//...
+const Dashboard: React.FC = () => {
+  const [newRepo, setNewRepo] = useState('');
+  const [inputError, setInputError] = useState('');
+  const [repositories, setRepositories] = useState<Repository[]>(() => {
+    const storagedRepositories = localStorage.getItem(
+      '@GithubExplorer:repositories',
+    );
+    if (storagedRepositories) {
+      return JSON.parse(storagedRepositories);
+    }
+    return [];
+  });
+  useEffect(() => {
+    localStorage.setItem(
+      '@GithubExplorer:repositories',
+      JSON.stringify(repositories),
+    );
+  }, [repositories]);
+//...
+```
+
+- Dashboard/index.tsx
+  - Importado a função useEffect da biblioteca react
+  - Criado dentro da função de componentes Dashboard, a execução da função useEffect salvando no local storage as informações do array repositories no formato JSON, pelo método setItem
+  - Alterado o valor inicial de estado do array repositories
+    - Criado a variável storagedRepositories que recebe os dados do método getItem ao local storage
+    - Verificado se há dados na variável storagedRepositóries, se sim, é retornado a conversão do formato JSON em formato array, se não, é retornado um array vazio
