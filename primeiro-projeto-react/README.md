@@ -9,7 +9,8 @@
   <a href="#estilizando-dashboard">Estilizando dashboard</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
   <a href="#conectando-a-api">Conectando a API</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
   <a href="#lidando-com-erros">Lidando com erros</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
-  <a href="#salvando-no-storage">Salvando no storage</a>
+  <a href="#salvando-no-storage">Salvando no storage</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+  <a href="#navegando-entre-rotas">Navegando entre rotas</a>
 </p>
 
 ### Criando projeto
@@ -651,3 +652,66 @@ const Dashboard: React.FC = () => {
   - Alterado o valor inicial de estado do array repositories
     - Criado a variável storagedRepositories que recebe os dados do método getItem ao local storage
     - Verificado se há dados na variável storagedRepositóries, se sim, é retornado a conversão do formato JSON em formato array, se não, é retornado um array vazio
+
+### Navegando entre rotas
+
+```tsx
+//...
+import { Link } from 'react-router-dom';
+//...
+<Repositories>
+  {repositories.map(repository => (
+    <Link
+      key={repository.full_name}
+      to={`/repository/${repository.full_name}`}
+    >
+      <img
+        src={repository.owner.avatar_url}
+        alt={repository.owner.login}
+      />
+      <div>
+        <strong>{repository.full_name}</strong>
+        <p>{repository.description}</p>
+      </div>
+      <FiChevronRight size={20} />
+    </Link>
+//...
+```
+
+```tsx
+//...
+<Route path="/repository/:repository+" component={Repository} />
+//...
+```
+
+```tsx
+import React from 'react';
+import { useRouteMatch } from 'react-router-dom';
+interface RepositoryParams {
+  repository: string;
+}
+const Repository: React.FC = () => {
+  const { params } = useRouteMatch<RepositoryParams>();
+  return <h1>Repository:{params.repository}</h1>;
+};
+export default Repository;
+```
+
+```json
+//...
+"react/jsx-one-expression-per-line": "off",
+//...
+```
+
+- Dashboard/index.tsx
+  - Importado a função link da biblioteca react-router-dom
+  - Alterado no componente Repositories o uso do a pelo link
+- routes/index.tsx
+  - Alterado o path /repository para tratar a url recebida pelo link do componente Repositories
+- Repository/index.tsx
+  - Importado a função useRouteMatch da biblioteca react-router-dom
+  - Criado a interface RepositoryParams
+  - Criado dentro da função de componentes Repository, a variável desestruturada param chamando a função useRouteMatch com o tipo RepositoryParams
+  - Adicionado no returno do h1 a informação da variável param, para exibir o título do repositório armazenado no local storage
+- .eslintrc.json
+  - Adicionado a regra para desligar a verificação de uma expressão jsx por linha
