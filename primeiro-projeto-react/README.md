@@ -10,7 +10,8 @@
   <a href="#conectando-a-api">Conectando a API</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
   <a href="#lidando-com-erros">Lidando com erros</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
   <a href="#salvando-no-storage">Salvando no storage</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
-  <a href="#navegando-entre-rotas">Navegando entre rotas</a>
+  <a href="#navegando-entre-rotas">Navegando entre rotas</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+  <a href="#estilizando-detalhe">Estilizando detalhe</a>
 </p>
 
 ### Criando projeto
@@ -715,3 +716,186 @@ export default Repository;
   - Adicionado no returno do h1 a informação da variável param, para exibir o título do repositório armazenado no local storage
 - .eslintrc.json
   - Adicionado a regra para desligar a verificação de uma expressão jsx por linha
+
+### Estilizando detalhe
+
+```ts
+import styled from 'styled-components';
+export const Header = styled.header`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  a {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: #a8a8b3;
+    transition: color 0.2s;
+    &:hover {
+      color: #666;
+    }
+    svg {
+      margin-right: 4px;
+    }
+  }
+`;
+export const RepositoryInfo = styled.section`
+  margin-top: 80px;
+  header {
+    display: flex;
+    align-items: center;
+    img {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+    }
+    div {
+      margin-left: 24px;
+      strong {
+        font-size: 36px;
+        color: #3d3d4d;
+      }
+      p {
+        font-size: 18px;
+        color: #737380;
+        margin-top: 4px;
+      }
+    }
+  }
+  ul {
+    display: flex;
+    list-style: none;
+    margin-top: 40px;
+    li {
+      & + li {
+        margin-left: 80px;
+      }
+      strong {
+        display: block;
+        font-size: 36px;
+        color: #3d3d4d;
+      }
+      span {
+        display: block;
+        margin-top: 4px;
+        color: #6c6c80;
+      }
+    }
+  }
+`;
+export const Issues = styled.div`
+  margin-top: 80px;
+  a {
+    background: #fff;
+    border-radius: 5px;
+    width: 100%;
+    padding: 24px;
+    display: block;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    transition: transform 0.2s;
+    & + a {
+      margin-top: 16px;
+    }
+    &:hover {
+      transform: translateX(10px);
+    }
+    div {
+      margin: 0 16px;
+      flex: 1;
+      strong {
+        font-size: 20px;
+        color: #3d3d4d;
+      }
+      p {
+        font-size: 18px;
+        color: #a8a8b3;
+        margin-top: 4px;
+      }
+    }
+    svg {
+      margin-left: auto;
+      color: #cbcbd6;
+    }
+  }
+`;
+```
+
+```tsx
+import React from 'react';
+import { FiChevronsLeft, FiChevronRight } from 'react-icons/fi';
+import { useRouteMatch, Link } from 'react-router-dom';
+import logoImg from '../../assets/logo.svg';
+import { Header, RepositoryInfo, Issues } from './styles';
+interface RepositoryParams {
+  repository: string;
+}
+const Repository: React.FC = () => {
+  const { params } = useRouteMatch<RepositoryParams>();
+  return (
+    <>
+      <Header>
+        <img src={logoImg} alt="Github Explorer" />
+        <Link to="/">
+          <FiChevronsLeft size={16} />
+          Voltar
+        </Link>
+      </Header>
+      <RepositoryInfo>
+        <header>
+          <img
+            src="https://avatars.githubusercontent.com/u/49215447?s=460&u=78e7059548bb7614039927ee0a5c7ffc5b7e4b9f&v=4"
+            alt="Alisson"
+          />
+          <div>
+            <strong>Nome do repositório</strong>
+            <p>Descrição do repositório</p>
+          </div>
+        </header>
+        <ul>
+          <li>
+            <strong>1080</strong>
+            <span>Stars</span>
+          </li>
+          <li>
+            <strong>48</strong>
+            <span>Forks</span>
+          </li>
+          <li>
+            <strong>67</strong>
+            <span>Issues abertas</span>
+          </li>
+        </ul>
+      </RepositoryInfo>
+      <Issues>
+        <Link to="abcd">
+          <div>
+            <strong>abcd</strong>
+            <p>abcd</p>
+          </div>
+          <FiChevronRight size={20} />
+        </Link>
+      </Issues>
+    </>
+  );
+};
+export default Repository;
+```
+
+- Criado arquivo: /src/pages/Repository/styles.ts
+  - Importado o componente styled da biblioteca styled-components
+  - Criado a variável Header utilizando o componente styled header e configurado o css para o header, a e svg
+  - Criado a variável RepositoryInfo utilizando o componente styled section e configurado o css para header, img, div, strong, p, ul, li e span
+  - Criado a variável Issues utilizando o componente styled div e configurado o css para div, a, strong, p e svg
+- Repository/index.tsx
+  - Importado a imagem da logo, os estilos Header, RepositoryInfo e Issues, a função Linkl da biblioteca react-router-dom e os icones FiChevronLeft e FiChevronRight do pacote react-icons/fi
+  - Alterado o return removendo o h1 e adicionando o componente Header
+    - Adicionado a imagem da logo
+    - Adicionado o link com o icone FiChevronLeft para voltar para a rota /
+  - Adicionado o componente RepositoryInfo
+    - Adicionado um header com a imagem do perfil e a div com o título e descrição do repositório
+    - Adicionado um lista com as informações do repositório
+  - Adiconado o componente Issues
+    - Adicionado o link com o icone FiChevronRight para o endereço da issue
+      - Adicionado uma div com um strong para o título da issue e um p para a descrição da issue
