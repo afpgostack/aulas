@@ -3,7 +3,8 @@
 ## Aulas nivel03 - Iniciando front-end web
 
 <p align="center">
-  <a href="#configurando-estrutura">Configurando estrutura</a>
+  <a href="#configurando-estrutura">Configurando estrutura</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+  <a href="#estilos-globais">Estilos globais</a>
 </p>
 
 ### Configurando estrutura
@@ -164,3 +165,80 @@ ReactDOM.render(
   - Removido as importações dos arquivos deletados e os comentários
 - ./public/index.html
   - Removido as importações dos arquivos deletados e os comentários
+
+### Estilos globais
+
+```shell
+yarn add styled-components
+yarn add -D @types/styled-components
+mkdir -p ./src/styles
+touch ./src/styles/global.ts
+```
+
+```ts
+import { createGlobalStyle } from 'styled-components';
+export default createGlobalStyle`
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    outline: 0;
+  }
+  body {
+    background: #312e38;
+    color: #fff;
+    -webkit-font-smoothing: antialiased;
+  }
+  body, input, button {
+    font-family: 'Roboto Slab', serif;
+    font-size: 16px;
+  }
+  h1, h2, h3, h4, h5, h6, strong {
+    font-weight: 500;
+  }
+  button{
+    cursor: pointer;
+  }
+`;
+```
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#ff9900" />
+    <title>GoBarber</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@400;500&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+  </body>
+</html>
+```
+
+```tsx
+import React from 'react';
+import GlobalStyle from './styles/global';
+const App: React.FC = () => (
+  <>
+    <h1>Hello World!</h1>
+    <GlobalStyle />
+  </>
+);
+export default App;
+```
+
+- Adicionado a biblioteca styled-components e sua tipagem como dependência de desenvolvimento
+- Criado diretório: ./src/styles
+- Criado arquivo: ./src/styles/global.ts
+  - Importado a função createGlobalStyle da biblioteca styled-components
+  - Exportado a configuração de css realizada no createGlobalStyle
+- ./public/index.html
+  - Gerado o link para a fonte Roboto Slab
+  - Adicionado o link da fonte como último item do head
+- ./src/App.tsx
+  - Importado o arquivo global.ts
+  - Adicionado na função de componentes App a configuração de css do GlobalStyle
