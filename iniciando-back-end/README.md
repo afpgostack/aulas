@@ -17,7 +17,8 @@
   <a href="#atualizando-avatar">Atualizando avatar</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
   <a href="#servindo-arquivos-estáticos">Servindo arquivos estáticos</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
   <a href="#criando-classe-de-erro">Criando classe de erro</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
-  <a href="#lidando-com-erros">Lidando com erros</a>
+  <a href="#lidando-com-erros">Lidando com erros</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+  <a href="#habilitando-cors-na-api">Habilitando CORS na API</a>
 </p>
 
 ### Configurando TypeORM
@@ -1079,3 +1080,13 @@ app.listen(3333, () => {
     - Adicionado o método use após todas as configurações de rotas passando como parâmetros error, request, response e next
         - Verificado se o erro foi instanciado no AppError, se sim, retorna a mensagem com o código e a mensagem
         - Retornado a resposta com o código 500 e a mensagem Internal server error caso o erro não tenha sido instanciado pelo AppError
+
+### Habilitando CORS na API
+
+```
+yarn add cors
+```
+
+- Adicionado o pacote cors
+- Importado no arquivo /src/server.ts o pacote cors
+- Chamado o cors pelo app
