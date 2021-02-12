@@ -16,6 +16,7 @@ import { Form } from '@unform/mobile';
 import { FormHandles } from '@unform/core';
 
 import getValidationErrors from '../../utils/getValidationErrors';
+import api from '../../services/api';
 
 import Input from '../../components/Input';
 import Button from '../../components/Button';
@@ -42,20 +43,26 @@ const SignUp: React.FC = () => {
       formRef.current?.setErrors({});
 
       const schema = Yup.object().shape({
-        name: Yup.string().required('Nome obrigatório'),
+        name: Yup.string().required('Nome obrigatório.'),
         email: Yup.string()
-          .email('Digite um e-mail válido')
-          .required('E-mail obrigatório'),
-        password: Yup.string().min(6, 'No mínimo 6 dígitos'),
+          .email('Digite um e-mail válido.')
+          .required('E-mail obrigatório.'),
+        password: Yup.string().min(6, 'Mínimo de 6 dígitos.'),
       });
 
       await schema.validate(data, {
         abortEarly: false,
       });
 
-      // await api.post('/users', data);
+      await api.post('/users', data);
 
       // history.push('/');
+      Alert.alert(
+        'Cadastro realizado!',
+        'Você já pode fazer seu logon no GoBarber!',
+      );
+
+      navigation.goBack();
     } catch (err) {
       if (err instanceof Yup.ValidationError) {
         const errors = getValidationErrors(err);
@@ -66,11 +73,11 @@ const SignUp: React.FC = () => {
       }
 
       Alert.alert(
-        'Erro no cadastro',
-        'Ocorreu um erro ao fazer cadastro, tente novamente.',
+        'Erro no cadastro.',
+        'Ocorreu um erro ao realizar o cadastro, tente novamente.',
       );
     }
-  }, []);
+  }, [navigation],);
 
   return (
     <>
