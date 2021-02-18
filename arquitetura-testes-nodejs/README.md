@@ -4,7 +4,8 @@
 
 <p align="center">
   <a href="#arquitetura-e-ddd">Arquitetura e DDD</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
-  <a href="#separando-em-modulos">Separando em módulos</a>
+  <a href="#separando-em-módulos">Separando em módulos</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+  <a href="#camada-de-infra">Camada de Infra</a>
 </p>
 
 ### Arquitetura e DDD
@@ -184,3 +185,23 @@ rm -rf ./src/{services,repositories,models}
         - Movido os arquivos AuthenticateUserService.ts, CreateUserService.ts e UpdateUserAvatarService.ts
   - ./src/shared/
     - Movido os diretórios ./src/database/, ./src/errors/, ./src/middlewares/ e ./src/routes/
+
+### Camada de Infra
+
+```shell
+mkdir -p ./src/{shared/infra/http,modules/{appointments/infra/typeorm,users/infra/typeorm}}
+mv ./src/shared/database/ ./src/shared/infra/typeorm/
+mv ./src/{server.ts,shared/{middlewares,routes}} ./src/shared/infra/http
+mv ./src/modules/appointments/entities/ ./src/modules/appointments/infra/typeorm/
+mv ./src/modules/users/entities/ ./src/modules/users/infra/typeorm/
+```
+
+- Criado os diretórios:
+  - ./src/shared/infra
+    - Movido o diretório database e renomeado para typeorm
+  - ./src/shared/infra/http
+    - Movido o arquivo server.ts e os diretórios middlewares e routes
+  - ./src/modules/appointments/infra/typeorm
+    - Movido o diretório entities
+  - ./src/modules/users/infra/typeorm
+    - Movido o diretório entities
