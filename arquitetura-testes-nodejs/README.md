@@ -2,6 +2,11 @@
 
 ## Aulas nivel04 - Arquitetura e testes no Node.js
 
+<p align="center">
+  <a href="#arquitetura-e-ddd">Arquitetura e DDD</a>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+  <a href="#separando-em-modulos">Separando em módulos</a>
+</p>
+
 ### Arquitetura e DDD
 
 ```shell
@@ -116,6 +121,7 @@ git checkout -b nivel04
 git remote add origin https://github.com/afpgostack/aulas.git
 git add .
 git commit -m "Nivel04 - Backend: Arquitetura e DDD"
+git push -u origin nivel04
 ```
 
 - Voltado para o diretório nivel04, iniciado o versionamento git, retornado ao diretório do projeto
@@ -124,3 +130,57 @@ git commit -m "Nivel04 - Backend: Arquitetura e DDD"
 - Adicionado os arquivos no staging area do git
 - Realizado o commit
 - Enviado os arquivos para o github na branch nivel04
+
+### Separando em módulos
+
+```json
+"material-icon-theme.folders.associations": {
+  "infra": "app",
+  "entities": "class",
+  "schemas": "class",
+  "typeorm": "database",
+  "repositories": "mappings",
+  "http": "container",
+  "migrations": "tools",
+  "modules": "components",
+  "implementations": "core",
+  "dtos": "typescript",
+  "fakes": "mock",
+  "users": "client",
+  "appointments": "temp"
+},
+"material-icon-theme.files.associations": {
+  "ormconfig.json": "database",
+  "tsconfig.json": "tune"
+},
+```
+
+- Adicionado às configurações do VSCode, os ícones relacionados aos diretórios e arquivos do projeto
+
+```shell
+mkdir -p ./src/{shared,modules/{appointments/{services,repositories,entities},users/{services,entities}}}
+mv ./src/services/*Appointment* ./src/modules/appointments/services/
+mv ./src/services/*User* ./src/modules/users/services/
+mv ./src/repositories/*Appointment* ./src/modules/appointments/repositories/
+mv ./src/{database,errors,middlewares,routes} ./src/shared/
+mv ./src/models/*Appointment* ./src/modules/appointments/entities/
+mv ./src/models/*User* ./src/modules/users/entities/
+rm -rf ./src/{services,repositories,models}
+```
+
+- Criado os diretórios:
+  - ./src/modules/
+    - ./src/modules/appointments/
+      - ./src/modules/appointments/entities/
+        - Movido o arquivo Appointment.ts
+      - ./src/modules/appointments/repositories/
+        - Movido o arquivo AppointmentsRepository.ts
+      - ./src/modules/appointments/services/
+        - Movido o arquivo CreateAppointmentService.ts
+    - ./src/modules/users/
+      - ./src/modules/users/entities/
+        - Movido o arquivo User.ts
+      - ./src/modules/users/services/
+        - Movido os arquivos AuthenticateUserService.ts, CreateUserService.ts e UpdateUserAvatarService.ts
+  - ./src/shared/
+    - Movido os diretórios ./src/database/, ./src/errors/, ./src/middlewares/ e ./src/routes/
