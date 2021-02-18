@@ -19,13 +19,25 @@
         "prettier"
     ],
     "rules": {
+      "no-underscore-dangle": "off",
       "no-use-before-define": "off",
       "prettier/prettier": "error",
-      "camelcase": "off",
       "class-methods-use-this": "off",
       "import/prefer-default-export": "off",
+      "@typescript-eslint/camelcase": "off",
+      "@typescript-eslint/no-unused-vars": ["error", {
+        "argsIgnorePattern": "^_"
+      }],
       "@typescript-eslint/no-use-before-define": [
 	      "error"
+      ],
+      "@typescript-eslint/naming-convention": [
+        "error",
+        {
+          "selector": "interface",
+          "prefix": ["I"],
+          "format": ["PascalCase"]
+        }
       ],
       "import/extensions": [
         "error",
