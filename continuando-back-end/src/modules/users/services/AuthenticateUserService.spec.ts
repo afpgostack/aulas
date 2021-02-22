@@ -34,8 +34,8 @@ describe('AuthenticateUser', () => {
       password: '123123',
     });
 
-    await expect(response).toHaveProperty('token');
-    await expect(response.user).toEqual(user);
+    expect(response).toHaveProperty('token');
+    expect(response.user).toEqual(user);
   });
 
   it('should not be able to authenticate with a non existing user', async () => {

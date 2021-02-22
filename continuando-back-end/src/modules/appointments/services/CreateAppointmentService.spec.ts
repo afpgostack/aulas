@@ -25,8 +25,8 @@ describe('CreateAppointment', () => {
       user_id: 'user-id',
     });
 
-    await expect(appointment).toHaveProperty('id');
-    await expect(appointment.provider_id).toBe('provider-id');
+    expect(appointment).toHaveProperty('id');
+    expect(appointment.provider_id).toBe('provider-id');
   });
 
   it('should not be able to create two appointments on the same time', async () => {
