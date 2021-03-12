@@ -30,25 +30,27 @@ import {
   UserAvatar,
 } from './styles';
 
-interface SignUpFormData {
+interface ProfileFormData {
   name: string;
   email: string;
   password: string;
+  old_password: string;
+  password_confirmation: string;
 }
 
-const SignUp: React.FC = () => {
-  const { user } = useAuth();
+const Profile: React.FC = () => {
+  const { user, updateUser } = useAuth();
 
   const formRef = useRef<FormHandles>(null);
   const navigation = useNavigation();
 
   const emailInputRef = useRef<TextInput>(null);
+  const oldPasswordInputRef = useRef<TextInput>(null);
   const passwordInputRef = useRef<TextInput>(null);
-  const newPasswordInputRef = useRef<TextInput>(null);
   const confirmPasswordInputRef = useRef<TextInput>(null);
 
   const handleSignUp = useCallback(
-    async (data: SignUpFormData) => {
+    async (data: ProfileFormData) => {
       try {
         formRef.current?.setErrors({});
 
@@ -57,19 +59,50 @@ const SignUp: React.FC = () => {
           email: Yup.string()
             .email('Digite um e-mail válido.')
             .required('E-mail obrigatório.'),
-          password: Yup.string().min(6, 'Mínimo de 6 dígitos.'),
+          old_password: Yup.string(),
+          password: Yup.string().when('old_password', {
+            is: val => !!val.length,
+            then: Yup.string().required('Campo obrigatório.'),
+            otherwise: Yup.string(),
+          }),
+          password_confirmation: Yup.string()
+            .when('old_password', {
+              is: val => !!val.length,
+              then: Yup.string().required('Campo obrigatório.'),
+              otherwise: Yup.string(),
+            })
+            .oneOf([Yup.ref('password'), null], 'Confirmação incorreta.'),
         });
 
         await schema.validate(data, {
           abortEarly: false,
         });
 
-        await api.post('/users', data);
+        const {
+          name,
+          email,
+          old_password,
+          password,
+          password_confirmation,
+        } = data;
 
-        Alert.alert(
-          'Cadastro realizado!',
-          'Você já pode fazer seu logon no GoBarber!',
-        );
+        const formData = {
+          name,
+          email,
+          ...(old_password
+            ? {
+                old_password,
+                password,
+                password_confirmation,
+              }
+            : {}),
+        };
+
+        const response = await api.put('profile', formData);
+
+        updateUser(response.data);
+
+        Alert.alert('Perfil atualizado com sucesso!');
 
         navigation.goBack();
       } catch (err) {
@@ -82,8 +115,8 @@ const SignUp: React.FC = () => {
         }
 
         Alert.alert(
-          'Erro no cadastro',
-          'Ocorreu um erro ao realizar o cadastro, tente novamente.',
+          'Erro ao atualizar o perfil.',
+          'Ocorreu um erro ao atualizar o perfil, tente novamente.',
         );
       }
     },
@@ -117,7 +150,8 @@ const SignUp: React.FC = () => {
             <View>
               <Title>Meu perfil</Title>
             </View>
-            <Form ref={formRef} onSubmit={handleSignUp}>
+
+            <Form initialData={user} ref={formRef} onSubmit={handleSignUp}>
               <Input
                 autoCapitalize="words"
                 name="name"
@@ -139,26 +173,26 @@ const SignUp: React.FC = () => {
                 placeholder="E-mail"
                 returnKeyType="next"
                 onSubmitEditing={() => {
+                  oldPasswordInputRef.current?.focus();
+                }}
+              />
+
+              <Input
+                ref={oldPasswordInputRef}
+                secureTextEntry
+                name="old_password"
+                icon="lock"
+                placeholder="Senha atual"
+                textContentType="newPassword"
+                returnKeyType="next"
+                containerStyle={{ marginTop: 16 }}
+                onSubmitEditing={() => {
                   passwordInputRef.current?.focus();
                 }}
               />
 
               <Input
                 ref={passwordInputRef}
-                secureTextEntry
-                name="password"
-                icon="lock"
-                placeholder="Senha"
-                textContentType="newPassword"
-                returnKeyType="next"
-                containerStyle={{ marginTop: 16 }}
-                onSubmitEditing={() => {
-                  newPasswordInputRef.current?.focus();
-                }}
-              />
-
-              <Input
-                ref={newPasswordInputRef}
                 secureTextEntry
                 name="password"
                 icon="lock"
@@ -198,4 +232,4 @@ const SignUp: React.FC = () => {
   );
 };
 
-export default SignUp;
+export default Profile;
